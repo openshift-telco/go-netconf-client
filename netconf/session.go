@@ -2,6 +2,7 @@ package netconf
 
 import (
 	"github.com/adetalhouet/go-netconf/netconf/message"
+	"log"
 	"strings"
 )
 
@@ -27,6 +28,9 @@ func NewSession(t Transport) *Session {
 	serverHello, _ := t.ReceiveHello()
 	s.SessionID = serverHello.SessionID
 	s.Capabilities = serverHello.Capabilities
+
+	log.Default().Println("Received server hello-message")
+	log.Default().Println("Sending our hello-message")
 
 	// Send our hello using default capabilities.
 	err := t.SendHello(&message.Hello{Capabilities: DefaultCapabilities})
