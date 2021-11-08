@@ -2,6 +2,7 @@ package netconf
 
 import (
 	"encoding/xml"
+	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf/message"
 
 )
@@ -16,11 +17,13 @@ func (s *Session) ExecRPC(operation interface{}) (*message.RPCReply, error) {
 	header := []byte(xml.Header)
 	request = append(header, request...)
 
+	fmt.Println("Sending RPC")
 	err = s.Transport.Send(request)
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Println("Receiving RPC's answer")
 	rawXML, err := s.Transport.Receive()
 	if err != nil {
 		return nil, err
