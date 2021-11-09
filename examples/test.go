@@ -28,7 +28,7 @@ func main() {
 	fmt.Println(s.SessionID)
 
 	// Get Session
-	handleReply(s.ExecRPC(message.NewGet(message.FilterTypeSubtree, "")))
+	handleReply(s.ExecRPC(message.NewGetConfig(message.DatastoreRunning, message.FilterTypeSubtree, "")))
 
 	// Close Session
 	handleReply(s.ExecRPC(message.NewCloseSession()))
