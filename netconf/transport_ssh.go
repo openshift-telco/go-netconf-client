@@ -86,8 +86,6 @@ func (t *TransportSSH) Dial(target string, config *ssh.ClientConfig) error {
 	return err
 }
 
-
-
 // DialSSH creates a new NETCONF session using an SSH Transport.
 // See TransportSSH.Dial for arguments.
 func DialSSH(target string, config *ssh.ClientConfig) (*Session, error) {

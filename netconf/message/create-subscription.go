@@ -37,7 +37,7 @@ type Subscription struct {
 }
 
 // NewCreateSubscription can be used to create a `create-subscription` message.
-func NewCreateSubscription(stopTime string, startTime string, stream string) (*CreateSubscription) {
+func NewCreateSubscription(stopTime string, startTime string, stream string) *CreateSubscription {
 	var rpc CreateSubscription
 	var sub = &Subscription{
 		NetconfNotificationXmlns, stream, startTime, stopTime,

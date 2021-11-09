@@ -10,7 +10,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf/message"
-
 )
 
 // ExecRPC is used to execute an RPC method

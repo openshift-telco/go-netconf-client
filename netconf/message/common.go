@@ -25,9 +25,9 @@ import (
 
 const (
 	// FilterTypeSubtree represent the filter for get operation
-	FilterTypeSubtree  string = "subtree"
+	FilterTypeSubtree string = "subtree"
 	// DatastoreRunning represents the running datastore
-	DatastoreRunning   string = "running"
+	DatastoreRunning string = "running"
 	// DatastoreCandidate represents the candidate datastore
 	DatastoreCandidate string = "candidate"
 	// NetconfVersion10 is the XMLNS representing NETCONF 1.0 version

@@ -20,8 +20,8 @@ package message
 // https://datatracker.ietf.org/doc/html/rfc6241#section-7.7
 type Get struct {
 	RPC
-	Get          interface{} `xml:"get"`
-	Filter       *Filter
+	Get    interface{} `xml:"get"`
+	Filter *Filter
 }
 
 // NewGet can be used to create a `get` message.

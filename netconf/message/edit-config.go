@@ -20,11 +20,11 @@ import "fmt"
 
 const (
 	// DefaultOperationTypeMerge represents the default operation to apply when doing an edit-config operation
-	DefaultOperationTypeMerge   string = "merge"
+	DefaultOperationTypeMerge string = "merge"
 	// DefaultOperationTypeReplace represents the default operation to apply when doing an edit-config operation
 	DefaultOperationTypeReplace string = "replace"
 	// DefaultOperationTypeNone represents the default operation to apply when doing an edit-config operation
-	DefaultOperationTypeNone    string = "none"
+	DefaultOperationTypeNone string = "none"
 )
 
 // EditConfig represents the NETCONF `edit-config` operation.

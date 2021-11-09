@@ -30,4 +30,3 @@ func NewCommit() *Commit {
 	rpc.MessageID = uuid()
 	return &rpc
 }
-
