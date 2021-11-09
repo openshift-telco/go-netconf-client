@@ -59,23 +59,30 @@ func (t *transportIO) Send(data []byte) error {
 
 // Receive reads the byte and if we have a chunked message, properly construct it.
 func (t *transportIO) Receive() ([]byte, error) {
+	//var separator []byte
+	//if t.version == "v1.1" {
+	//	separator = append(separator, []byte(msgSeparatorV11)...)
+	//	// NOTES: This is not clever at all
+	//	// you are reading the O-RU response content once with WaitForBytes, and then you read it again to get rid of
+	//	// the #<chunk-size> pieces. Using Chunked would be enough, but if you pass in the t.ReadWriteCloser to the
+	//	// splitChunked function it gets stuck when doing the Read of the last piece of the NETCONF message.
+	//	// This will need to be addressed in the future.
+	//	b, err := t.WaitForBytes(separator)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	return t.Chunked(b)
+	//} else {
+	//	separator = append(separator, []byte(msgSeparator)...)
+	//	return t.WaitForBytes(separator)
+	//}
 	var seperator []byte
 	if t.version == "v1.1" {
 		seperator = append(seperator, []byte(msgSeparatorV11)...)
-		// NOTES: This is not clever at all
-		// you are reading the O-RU response content once with WaitForBytes, and then you read it again to get rid of
-		// the #<chunk-size> pieces. Using Chunked would be enough, but if you pass in the t.ReadWriteCloser to the
-		// splitChunked function it gets stuck when doing the Read of the last piece of the NETCONF message.
-		// This will need to be addressed in the future.
-		b, err := t.WaitForBytes(seperator)
-		if err != nil {
-			return nil, err
-		}
-		return t.Chunked(b)
 	} else {
 		seperator = append(seperator, []byte(msgSeparator)...)
-		return t.WaitForBytes([]byte(seperator))
 	}
+	return t.WaitForBytes([]byte(seperator))
 }
 
 func (t *transportIO) SendHello(hello *message.Hello) error {
