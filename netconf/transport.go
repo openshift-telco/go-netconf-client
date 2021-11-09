@@ -80,6 +80,8 @@ func (t *transportBasicIO) Send(data []byte) error {
 	dataInfo = append(dataInfo, seperator...)
 	_, err := t.Write(dataInfo)
 
+	println(string(dataInfo))
+
 	return err
 }
 
