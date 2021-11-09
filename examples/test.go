@@ -32,5 +32,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Reply: %+v", reply)
+	fmt.Printf("Reply: %+v", reply.RawReply)
 }
