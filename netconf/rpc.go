@@ -17,7 +17,7 @@ func (s *Session) ExecRPC(operation interface{}) (*message.RPCReply, error) {
 	header := []byte(xml.Header)
 	request = append(header, request...)
 
-	fmt.Println(fmt.Sprintf("\nSending RPC\n"))
+	fmt.Println(fmt.Sprintf("\n\nSending RPC"))
 	err = s.Transport.Send(request)
 	if err != nil {
 		return nil, err

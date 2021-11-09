@@ -37,7 +37,7 @@ func main() {
 	handleReply(s.ExecRPC(message.NewLock(message.DatastoreCandidate)))
 
 	// EditConfig - change hostname
-	data := "<native xmlns=\"http://cisco.com/ns/yang/Cisco-IOS-XE-native\">\n          <hostname>test</hostname>\n        </native>"
+	data := "<native xmlns=\"http://cisco.com/ns/yang/Cisco-IOS-XE-native\"><hostname>test</hostname></native>"
 	handleReply(s.ExecRPC(message.NewEditConfig(message.DatastoreCandidate, message.DefaultOperationTypeMerge, data)))
 
 	// Commit
