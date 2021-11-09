@@ -11,8 +11,8 @@ const (
 	FilterTypeSubtree  string = "subtree"
 	DatastoreRunning   string = "running"
 	DatastoreCandidate string = "candidate"
-	NetconfVersion10 string = "urn:ietf:params:xml:ns:netconf:base:1.0"
-	NetconfVersion11 string = "urn:ietf:params:xml:ns:netconf:base:1.1"
+	NetconfVersion10 string = "urn:ietf:params:netconf:base:1.0"
+	NetconfVersion11 string = "urn:ietf:params:netconf:base:1.1"
 )
 
 // Filter represents the filter parameter of `get` message.

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf"
-	"github.com/adetalhouet/go-netconf/netconf/message"
 	"log"
 
 	"golang.org/x/crypto/ssh"
@@ -28,9 +27,9 @@ func main() {
 	fmt.Println(s.SessionID)
 
 	// Sends raw XML
-	reply, err := s.ExecRPC(message.NewGet("", ""))
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("Reply: %+v", reply)
+	//reply, err := s.ExecRPC(message.NewGet("", ""))
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Printf("Reply: %+v", reply)
 }

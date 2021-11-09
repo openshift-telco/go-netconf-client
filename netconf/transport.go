@@ -52,6 +52,9 @@ func (t *transportIO) Send(data []byte) error {
 
 	dataInfo = append(dataInfo, data...)
 	dataInfo = append(dataInfo, separator...)
+
+	println(string(dataInfo))
+
 	_, err := t.Write(dataInfo)
 
 	return err
@@ -59,30 +62,23 @@ func (t *transportIO) Send(data []byte) error {
 
 // Receive reads the byte and if we have a chunked message, properly construct it.
 func (t *transportIO) Receive() ([]byte, error) {
-	//var separator []byte
-	//if t.version == "v1.1" {
-	//	separator = append(separator, []byte(msgSeparatorV11)...)
-	//	// NOTES: This is not clever at all
-	//	// you are reading the O-RU response content once with WaitForBytes, and then you read it again to get rid of
-	//	// the #<chunk-size> pieces. Using Chunked would be enough, but if you pass in the t.ReadWriteCloser to the
-	//	// splitChunked function it gets stuck when doing the Read of the last piece of the NETCONF message.
-	//	// This will need to be addressed in the future.
-	//	b, err := t.WaitForBytes(separator)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	return t.Chunked(b)
-	//} else {
-	//	separator = append(separator, []byte(msgSeparator)...)
-	//	return t.WaitForBytes(separator)
-	//}
-	var seperator []byte
+	var separator []byte
 	if t.version == "v1.1" {
-		seperator = append(seperator, []byte(msgSeparatorV11)...)
+		separator = append(separator, []byte(msgSeparatorV11)...)
+		// NOTES: This is not clever at all
+		// you are reading the O-RU response content once with WaitForBytes, and then you read it again to get rid of
+		// the #<chunk-size> pieces. Using Chunked would be enough, but if you pass in the t.ReadWriteCloser to the
+		// splitChunked function it gets stuck when doing the Read of the last piece of the NETCONF message.
+		// This will need to be addressed in the future.
+		b, err := t.WaitForBytes(separator)
+		if err != nil {
+			return nil, err
+		}
+		return t.Chunked(b)
 	} else {
-		seperator = append(seperator, []byte(msgSeparator)...)
+		separator = append(separator, []byte(msgSeparator)...)
+		return t.WaitForBytes(separator)
 	}
-	return t.WaitForBytes([]byte(seperator))
 }
 
 func (t *transportIO) SendHello(hello *message.Hello) error {
@@ -93,6 +89,9 @@ func (t *transportIO) SendHello(hello *message.Hello) error {
 
 	header := []byte(xml.Header)
 	val = append(header, val...)
+
+	println(string(val))
+
 	err = t.Send(val)
 	return err
 }
@@ -234,6 +233,7 @@ func (t *transportIO) WaitForFunc(f func([]byte) (int, error)) ([]byte, error) {
 		n, err := t.Read(buf[pos : pos+(len(buf)/2)])
 		if err != nil {
 			if err != io.EOF {
+				fmt.Println(fmt.Sprintf("Failed here 1: /n%s", err))
 				return nil, err
 			}
 			break
@@ -242,6 +242,7 @@ func (t *transportIO) WaitForFunc(f func([]byte) (int, error)) ([]byte, error) {
 		if n > 0 {
 			end, err := f(buf[0 : pos+n])
 			if err != nil {
+				fmt.Println(fmt.Sprintf("Failed here 2: /n%s", err))
 				return nil, err
 			}
 
@@ -259,7 +260,7 @@ func (t *transportIO) WaitForFunc(f func([]byte) (int, error)) ([]byte, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("WaitForFunc failed")
+	return nil, fmt.Errorf("WaitForFunc failed. %s", out.Bytes())
 }
 
 func (t *transportIO) WaitForBytes(b []byte) ([]byte, error) {
