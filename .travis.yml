@@ -5,9 +5,9 @@ go:
   - tip
 
 matrix:
-    fast_finish: true
-    allow_failures:
-        - go: tip
+  fast_finish: true
+  allow_failures:
+    - go: tip
 
 install: go get -d -v -t ./... && go build -v ./...
 
@@ -16,6 +16,7 @@ script:
   - go test -v ./...                         # Run all the tests with the race detector enabled
   - go vet ./...                             # go vet is the official Go static analyzer
   - golint ./...                             # one last linter
+  - go test -race -coverprofile=coverage.txt -covermode=atomic # this is for codecov reporting
 
 before_script:
   - cd netconf
