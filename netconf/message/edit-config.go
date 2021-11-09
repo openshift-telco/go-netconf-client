@@ -13,8 +13,8 @@ const (
 type EditConfig struct {
 	RPC
 	Target           *Datastore `xml:"edit-config>target"`
-	Config           *config    `xml:"edit-config>config"`
 	DefaultOperation string     `xml:"edit-config>default-operation,omitempty"`
+	Config           *config    `xml:"edit-config>config"`
 }
 
 type config struct {
