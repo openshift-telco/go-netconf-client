@@ -27,8 +27,24 @@ func main() {
 	fmt.Println(s.Capabilities)
 	fmt.Println(s.SessionID)
 
-	// Get Session
+	// Get Config
 	handleReply(s.ExecRPC(message.NewGetConfig(message.DatastoreRunning, message.FilterTypeSubtree, "")))
+
+	// Get
+	//handleReply(s.ExecRPC(message.NewGet(message.FilterTypeSubtree, "")))
+
+	// Lock
+	handleReply(s.ExecRPC(message.NewLock(message.DatastoreCandidate)))
+
+	// EditConfig - change hostname
+	data := "<native xmlns=\"http://cisco.com/ns/yang/Cisco-IOS-XE-native\">\n          <hostname>test</hostname>\n        </native>"
+	handleReply(s.ExecRPC(message.NewEditConfig(message.DatastoreCandidate, message.DefaultOperationTypeMerge, data)))
+
+	// Commit
+	handleReply(s.ExecRPC(message.NewCommit()))
+
+	// Unlock
+	handleReply(s.ExecRPC(message.NewUnlock(message.DatastoreCandidate)))
 
 	// Close Session
 	handleReply(s.ExecRPC(message.NewCloseSession()))
@@ -39,5 +55,5 @@ func handleReply(reply *message.RPCReply, err error) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Reply: %+v", reply.RawReply)
+	fmt.Printf("%+v", reply.RawReply)
 }

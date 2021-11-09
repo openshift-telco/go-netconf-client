@@ -250,3 +250,17 @@ func TestNewCreateSubscription(t *testing.T) {
 		t.Errorf("TestNewCreateSubscription:\nGot:%s\nWant:\n%s", got, want)
 	}
 }
+
+func TestNewCommit(t *testing.T) {
+	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><commit></commit></rpc>"
+
+	rpc := NewCommit()
+	output, err := xml.Marshal(rpc)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	if got, want := StripUUID(string(output)), StripUUID(expected); got != want {
+		t.Errorf("TestNewCommit:\nGot:%s\nWant:\n%s", got, want)
+	}
+}

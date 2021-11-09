@@ -17,13 +17,13 @@ func (s *Session) ExecRPC(operation interface{}) (*message.RPCReply, error) {
 	header := []byte(xml.Header)
 	request = append(header, request...)
 
-	fmt.Println(fmt.Sprintf("Sending RPC"))
+	fmt.Println(fmt.Sprintf("\nSending RPC\n"))
 	err = s.Transport.Send(request)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println("Receiving RPC's answer")
+	fmt.Println("\nReceiving RPC's answer\n")
 	rawXML, err := s.Transport.Receive()
 	if err != nil {
 		return nil, err
