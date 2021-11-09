@@ -31,7 +31,7 @@ const (
 // TransportSSH maintains the information necessary to communicate with the
 // remote device over SSH
 type TransportSSH struct {
-	transportIO
+	transportBasicIO
 	sshClient  *ssh.Client
 	sshSession *ssh.Session
 }
