@@ -1,7 +1,7 @@
 # NETCONF
 
 [![GoDoc](https://godoc.org/github.com/adetalhouet/go-netconf/netconf?status.svg)](https://godoc.org/github.com/adetalhouet/go-netconf/netconf)
-[![Report Card](https://goreportcard.com/badge/github.com/adetalhouet/go-netconf/netconf)](https://goreportcard.com/report/github.com/adetalhouet/go-netconf/netconf)
+[![Report Card](https://goreportcard.com/badge/github.com/adetalhouet/go-netconf)](https://goreportcard.com/report/github.com/adetalhouet/go-netconf)
 [![Build Status](https://travis-ci.org/adetalhouet/go-netconf.png)](https://travis-ci.org/adetalhouet/go-netconf)
 
 This library is a simple NETCONF client based on :
