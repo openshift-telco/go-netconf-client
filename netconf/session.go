@@ -1,3 +1,9 @@
+// Go NETCONF Client
+//
+// Copyright (c) 2013-2018, Juniper Networks, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package netconf
 
 import (
@@ -50,30 +56,3 @@ func NewSession(t Transport) *Session {
 func (s *Session) Close() error {
 	return s.Transport.Close()
 }
-
-//
-//// CreateSubscription is used to execute an RPC <create-subscription> operation
-//func (s *Session) CreateSubscription(createSubscriptionRPC *CreateSubscriptionRPC) (*RPCReply, error) {
-//	if !stringInSlice(s.ServerCapabilities, NOTIFICATION_CAPABILITY) {
-//		return nil, &ErrCapabilityNotSupported{Cap: NOTIFICATION_CAPABILITY}
-//	}
-//	return s.send(createSubscriptionRPC, createSubscriptionRPC.MessageID)
-//}
-//
-//
-//func stringInSlice(l []string, t string) bool {
-//	for _, s := range l {
-//		if t == s {
-//			return true
-//		}
-//	}
-//	return false
-//}
-//
-//type ErrCapabilityNotSupported struct {
-//	Cap string
-//}
-//
-//func (e *ErrCapabilityNotSupported) Error() string {
-//	return fmt.Sprintf("capability %s is not supported", e.Cap)
-//}

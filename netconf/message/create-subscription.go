@@ -1,6 +1,7 @@
 package message
 
 const (
+	// NetconfNotificationXmlns is the XMLNS for the YANG model supporting NETCONF notification
 	NetconfNotificationXmlns = "urn:ietf:params:xml:ns:netconf:notification:1.0"
 )
 
@@ -11,6 +12,7 @@ type CreateSubscription struct {
 	Subscription Subscription `xml:"create-subscription"`
 }
 
+// Subscription is the struct to create a `create-subscription` message
 type Subscription struct {
 	XMLNS     string `xml:"xmlns,attr"`
 	Stream    string `xml:"stream,omitempty"`

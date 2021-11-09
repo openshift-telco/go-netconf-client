@@ -129,7 +129,7 @@ func TestGetConfigWithFilter(t *testing.T) {
 }
 
 func TestEditConfig(t *testing.T) {
-	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><edit-config><target><running></running></target><config><top xmlns=\"http://example.com/schema/1.2/config\"><users/></top></config><default-operation>merge</default-operation></edit-config></rpc>"
+	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><edit-config><target><running></running></target><default-operation>merge</default-operation><config><top xmlns=\"http://example.com/schema/1.2/config\"><users/></top></config></edit-config></rpc>"
 
 	rpc := NewEditConfig(DatastoreRunning, DefaultOperationTypeMerge, data)
 	output, err := xml.Marshal(rpc)

@@ -12,12 +12,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"os"
 	"strings"
 	"time"
 
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/agent"
 )
 
 const (
@@ -48,7 +46,10 @@ func (t *TransportSSH) Close() error {
 		if err := t.sshSession.Close(); err != nil {
 			// If we receive an error when trying to close the session, then
 			// lets try to close the socket, otherwise it will be left open
-			t.sshClient.Close()
+			err := t.sshClient.Close()
+			if err != nil {
+				return err
+			}
 			return err
 		}
 	}
@@ -57,14 +58,14 @@ func (t *TransportSSH) Close() error {
 	if t.sshClient != nil {
 		return t.sshClient.Close()
 	}
-	return fmt.Errorf("No connection to close")
+	return fmt.Errorf("no connection to close")
 }
 
 // Dial connects and establishes SSH sessions
 //
-// target can be an IP address (e.g.) 172.16.1.1 which utlizes the default
+// target can be an IP address (e.g.) 172.16.1.1 which utilizes the default
 // NETCONF over SSH port of 830.  Target can also specify a port with the
-// following format <host>:<port (e.g 172.16.1.1:22)
+// following format <host>:<port (e.g. 172.16.1.1:22)
 //
 // config takes a ssh.ClientConfig connection. See documentation for
 // go.crypto/ssh for documentation.  There is a helper function SSHConfigPassword
@@ -85,81 +86,24 @@ func (t *TransportSSH) Dial(target string, config *ssh.ClientConfig) error {
 	return err
 }
 
-// NewClientConn connects and establishes SSH sessions on an existing connection
-// should be used for callhome procedure, where the initial connection is done by
-// the netconf server
-func (t *TransportSSH) NewClientConn(target string, config *ssh.ClientConfig, conn net.Conn) error {
-	if !strings.Contains(target, ":") {
-		target = fmt.Sprintf("%s:%d", target, sshDefaultPort)
-	}
 
-	var err error
 
-	c, chans, reqs, err := ssh.NewClientConn(conn, target, config)
-	if err != nil {
-		return err
-	}
-	t.sshClient = ssh.NewClient(c, chans, reqs)
-
-	err = t.setupSession()
-	return err
-}
-
-func (t *TransportSSH) setupSession() error {
-	var err error
-
-	t.sshSession, err = t.sshClient.NewSession()
-	if err != nil {
-		return err
-	}
-
-	writer, err := t.sshSession.StdinPipe()
-	if err != nil {
-		return err
-	}
-
-	reader, err := t.sshSession.StdoutPipe()
-	if err != nil {
-		return err
-	}
-
-	t.ReadWriteCloser = NewReadWriteCloser(reader, writer)
-	return t.sshSession.RequestSubsystem(sshNetconfSubsystem)
-}
-
-// NewSSHSession creates a new NETCONF session using an existing net.Conn.
-func NewSSHSession(conn net.Conn, config *ssh.ClientConfig) (*Session, error) {
-	t, err := connToTransport(conn, config)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewSession(t), nil
-}
-
-// DialSSH creates a new NETCONF session using a SSH Transport.
+// DialSSH creates a new NETCONF session using an SSH Transport.
 // See TransportSSH.Dial for arguments.
 func DialSSH(target string, config *ssh.ClientConfig) (*Session, error) {
 	var t TransportSSH
 	err := t.Dial(target, config)
 	if err != nil {
-		t.Close()
+		err := t.Close()
+		if err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 	return NewSession(&t), nil
 }
 
-func UpgradeConn(target string, config *ssh.ClientConfig, conn net.Conn) (*Session, error) {
-	var t TransportSSH
-	err := t.NewClientConn(target, config, conn)
-	if err != nil {
-		t.Close()
-		return nil, err
-	}
-	return NewSession(&t), nil
-}
-
-// DialSSHTimeout creates a new NETCONF session using a SSH Transport with timeout.
+// DialSSHTimeout creates a new NETCONF session using an SSH Transport with timeout.
 // See TransportSSH.Dial for arguments.
 // The timeout value is used for both connection establishment and Read/Write operations.
 func DialSSHTimeout(target string, config *ssh.ClientConfig, timeout time.Duration) (*Session, error) {
@@ -172,7 +116,10 @@ func DialSSHTimeout(target string, config *ssh.ClientConfig, timeout time.Durati
 	t, err := connToTransport(conn, config)
 	if err != nil {
 		if t != nil {
-			t.Close()
+			err := t.Close()
+			if err != nil {
+				return nil, err
+			}
 		}
 		return nil, err
 	}
@@ -189,19 +136,6 @@ func DialSSHTimeout(target string, config *ssh.ClientConfig, timeout time.Durati
 	}()
 
 	return NewSession(t), nil
-}
-
-// SSHConfigPassword is a convenience function that takes a username and password
-// and returns a new ssh.ClientConfig setup to pass that username and password.
-// Convenience means that HostKey checks are disabled so it's probably less secure
-func SSHConfigPassword(user string, pass string) *ssh.ClientConfig {
-	return &ssh.ClientConfig{
-		User: user,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(pass),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
 }
 
 // SSHConfigPubKeyFile is a convenience function that takes a username, private key
@@ -241,30 +175,14 @@ func SSHConfigPubKeyFile(user string, file string, passphrase string) (*ssh.Clie
 
 }
 
-// SSHConfigPubKeyAgent is a convience function that takes a username and
-// returns a new ssh.Clientconfig setup to pass credentials received from
-// an ssh agent
-func SSHConfigPubKeyAgent(user string) (*ssh.ClientConfig, error) {
-	c, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK"))
-	if err != nil {
-		return nil, err
-	}
-	return &ssh.ClientConfig{
-		User: user,
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeysCallback(agent.NewClient(c).Signers),
-		},
-	}, nil
-}
-
 func connToTransport(conn net.Conn, config *ssh.ClientConfig) (*TransportSSH, error) {
-	c, chans, reqs, err := ssh.NewClientConn(conn, conn.RemoteAddr().String(), config)
+	c, channel, reqs, err := ssh.NewClientConn(conn, conn.RemoteAddr().String(), config)
 	if err != nil {
 		return nil, err
 	}
 
 	t := &TransportSSH{}
-	t.sshClient = ssh.NewClient(c, chans, reqs)
+	t.sshClient = ssh.NewClient(c, channel, reqs)
 
 	err = t.setupSession()
 	if err != nil {
@@ -280,11 +198,33 @@ type deadlineConn struct {
 }
 
 func (c *deadlineConn) Read(b []byte) (n int, err error) {
-	c.SetReadDeadline(time.Now().Add(c.timeout))
+	_ = c.SetReadDeadline(time.Now().Add(c.timeout))
 	return c.Conn.Read(b)
 }
 
 func (c *deadlineConn) Write(b []byte) (n int, err error) {
-	c.SetWriteDeadline(time.Now().Add(c.timeout))
+	_ = c.SetWriteDeadline(time.Now().Add(c.timeout))
 	return c.Conn.Write(b)
+}
+
+func (t *TransportSSH) setupSession() error {
+	var err error
+
+	t.sshSession, err = t.sshClient.NewSession()
+	if err != nil {
+		return err
+	}
+
+	writer, err := t.sshSession.StdinPipe()
+	if err != nil {
+		return err
+	}
+
+	reader, err := t.sshSession.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	t.ReadWriteCloser = NewReadWriteCloser(reader, writer)
+	return t.sshSession.RequestSubsystem(sshNetconfSubsystem)
 }

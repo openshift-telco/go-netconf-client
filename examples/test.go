@@ -30,14 +30,14 @@ func main() {
 	// Get Config
 	handleReply(s.ExecRPC(message.NewGetConfig(message.DatastoreRunning, message.FilterTypeSubtree, "")))
 
-	// Get
+	// Get - some issues
 	//handleReply(s.ExecRPC(message.NewGet(message.FilterTypeSubtree, "")))
 
 	// Lock
 	handleReply(s.ExecRPC(message.NewLock(message.DatastoreCandidate)))
 
 	// EditConfig - change hostname
-	data := "<native xmlns=\"http://cisco.com/ns/yang/Cisco-IOS-XE-native\"><hostname>test</hostname></native>"
+	data := "<native xmlns=\"http://cisco.com/ns/yang/Cisco-IOS-XE-native\"><hostname>r1</hostname></native>"
 	handleReply(s.ExecRPC(message.NewEditConfig(message.DatastoreCandidate, message.DefaultOperationTypeMerge, data)))
 
 	// Commit

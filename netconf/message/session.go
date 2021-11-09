@@ -19,13 +19,13 @@ func NewCloseSession() *CloseSession {
 // https://datatracker.ietf.org/doc/html/rfc6241#section-7.8
 type KillSession struct {
 	RPC
-	SessionId string `xml:"kill-session>session-id"`
+	SessionID string `xml:"kill-session>session-id"`
 }
 
 // NewKillSession can be used to create a `kill-session` message.
-func NewKillSession(sessionId string) *KillSession {
+func NewKillSession(sessionID string) *KillSession {
 	var rpc KillSession
-	rpc.SessionId = sessionId
+	rpc.SessionID = sessionID
 	rpc.MessageID = uuid()
 	return &rpc
 }

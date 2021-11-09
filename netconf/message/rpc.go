@@ -36,6 +36,7 @@ type RPCReply struct {
 	RawReply  string     `xml:"-"`
 }
 
+// NewRPCReply creates an instance of an RPCReply based on what was received
 func NewRPCReply(rawXML []byte) (*RPCReply, error) {
 	reply := &RPCReply{}
 	reply.RawReply = string(rawXML)

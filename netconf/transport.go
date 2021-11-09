@@ -19,25 +19,12 @@ import (
 )
 
 const (
-	// msgSeperator is used to separate sent messages via NETCONF
-	msgSeperator     = "]]>]]>"
-	msgSeperator_v11 = "\n##\n"
+	// msgSeparator is used to separate sent messages via NETCONF
+	msgSeparator    = "]]>]]>"
+	msgSeparatorV11 = "\n##\n"
 )
 
-// DefaultCapabilities sets the default capabilities of the client library
-//var DefaultCapabilities = []string{
-//	"urn:ietf:params:netconf:base:1.0",
-//	"urn:ietf:params:netconf:base:1.1",
-//}
-
-// HelloMessage is used when bringing up a NETCONF session
-type HelloMessage struct {
-	XMLName      xml.Name `xml:"urn:ietf:params:xml:ns:netconf:base:1.0 hello"`
-	Capabilities []string `xml:"capabilities>capability"`
-	SessionID    int      `xml:"session-id,omitempty"`
-}
-
-// Transport interface defines what characterisitics make up a NETCONF transport
+// Transport interface defines what characteristics make up a NETCONF transport
 // layer object.
 type Transport interface {
 	Send([]byte) error
@@ -58,26 +45,23 @@ func (t *transportBasicIO) SetVersion(version string) {
 	t.version = version
 }
 
-// Sends a well formated NETCONF rpc message as a slice of bytes adding on the
-// nessisary framining messages.
+// Send a well formatted NETCONF rpc message as a slice of bytes adding on the
+// necessary framing messages.
 func (t *transportBasicIO) Send(data []byte) error {
-	var seperator []byte
+	var separator []byte
 	var dataInfo []byte
-	//headlen := 0
 	if t.version == "v1.1" {
-		seperator = append(seperator, []byte(msgSeperator_v11)...)
+		separator = append(separator, []byte(msgSeparatorV11)...)
 	} else {
-		seperator = append(seperator, []byte(msgSeperator)...)
+		separator = append(separator, []byte(msgSeparator)...)
 	}
 
 	if t.version == "v1.1" {
 		header := fmt.Sprintf("\n#%d\n", len(string(data)))
 		dataInfo = append(dataInfo, header...)
-		//t.Write([]byte(header))
-		//headlen = len([]byte(header))
 	}
 	dataInfo = append(dataInfo, data...)
-	dataInfo = append(dataInfo, seperator...)
+	dataInfo = append(dataInfo, separator...)
 	_, err := t.Write(dataInfo)
 
 	println(string(dataInfo))
@@ -86,9 +70,9 @@ func (t *transportBasicIO) Send(data []byte) error {
 }
 
 func (t *transportBasicIO) Receive() ([]byte, error) {
-	var seperator []byte
+	var separator []byte
 	if t.version == "v1.1" {
-		seperator = append(seperator, []byte(msgSeperator_v11)...)
+		separator = append(separator, []byte(msgSeparatorV11)...)
 		// NOTES: This is not clever at all
 		// you are reading the O-RU response content once with WaitForBytes, and then you read it again to get rid of
 		// the #<chunk-size> pieces. Using Chunked would be enough, but if you pass in the t.ReadWriteCloser to the
@@ -96,15 +80,14 @@ func (t *transportBasicIO) Receive() ([]byte, error) {
 		// This will need to be addressed in the future.
 		// Also, splitChunked function comes from the andaru/netconf library, with just a slight modification to make it
 		// work.
-		b, err := t.WaitForBytes(seperator)
+		b, err := t.WaitForBytes(separator)
 		if err != nil {
 			return nil, err
 		}
 		return t.Chunked(b)
-	} else {
-		seperator = append(seperator, []byte(msgSeperator)...)
-		return t.WaitForBytes([]byte(seperator))
 	}
+	separator = append(separator, []byte(msgSeparator)...)
+	return t.WaitForBytes(separator)
 }
 
 func (t *transportBasicIO) SendHello(hello *message.Hello) error {
@@ -132,8 +115,14 @@ func (t *transportBasicIO) ReceiveHello() (*message.Hello, error) {
 }
 
 func (t *transportBasicIO) Writeln(b []byte) (int, error) {
-	t.Write(b)
-	t.Write([]byte("\n"))
+	_, err := t.Write(b)
+	if err != nil {
+		return 0, err
+	}
+	_, err = t.Write([]byte("\n"))
+	if err != nil {
+		return 0, err
+	}
 	return 0, nil
 }
 
@@ -289,9 +278,11 @@ func (t *transportBasicIO) WaitForFunc(f func([]byte) (int, error)) ([]byte, err
 }
 
 func (t *transportBasicIO) WaitForBytes(b []byte) ([]byte, error) {
-	return t.WaitForFunc(func(buf []byte) (int, error) {
-		return bytes.Index(buf, b), nil
-	})
+	return t.WaitForFunc(
+		func(buf []byte) (int, error) {
+			return bytes.Index(buf, b), nil
+		},
+	)
 }
 
 func (t *transportBasicIO) WaitForString(s string) (string, error) {
@@ -304,16 +295,18 @@ func (t *transportBasicIO) WaitForString(s string) (string, error) {
 
 func (t *transportBasicIO) WaitForRegexp(re *regexp.Regexp) ([]byte, [][]byte, error) {
 	var matches [][]byte
-	out, err := t.WaitForFunc(func(buf []byte) (int, error) {
-		loc := re.FindSubmatchIndex(buf)
-		if loc != nil {
-			for i := 2; i < len(loc); i += 2 {
-				matches = append(matches, buf[loc[i]:loc[i+1]])
+	out, err := t.WaitForFunc(
+		func(buf []byte) (int, error) {
+			loc := re.FindSubmatchIndex(buf)
+			if loc != nil {
+				for i := 2; i < len(loc); i += 2 {
+					matches = append(matches, buf[loc[i]:loc[i+1]])
+				}
+				return loc[1], nil
 			}
-			return loc[1], nil
-		}
-		return -1, nil
-	})
+			return -1, nil
+		},
+	)
 	return out, matches, err
 }
 
@@ -323,8 +316,7 @@ type ReadWriteCloser struct {
 	io.WriteCloser
 }
 
-// NewReadWriteCloser creates a new combined IO Reader and Write Closer from the
-// provided objects
+// NewReadWriteCloser creates a new combined IO Reader and WriteCloser from the provided objects
 func NewReadWriteCloser(r io.Reader, w io.WriteCloser) *ReadWriteCloser {
 	return &ReadWriteCloser{r, w}
 }

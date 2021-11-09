@@ -1,3 +1,9 @@
+// Go NETCONF Client
+//
+// Copyright (c) 2013-2018, Juniper Networks, Inc. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package netconf
 
 import (
@@ -23,7 +29,7 @@ func (s *Session) ExecRPC(operation interface{}) (*message.RPCReply, error) {
 		return nil, err
 	}
 
-	fmt.Println("\nReceiving RPC's answer\n")
+	fmt.Println("\nReceiving RPC's answer")
 	rawXML, err := s.Transport.Receive()
 	if err != nil {
 		return nil, err
