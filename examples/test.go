@@ -27,8 +27,15 @@ func main() {
 	fmt.Println(s.Capabilities)
 	fmt.Println(s.SessionID)
 
-	// Sends raw XML
-	reply, err := s.ExecRPC(message.NewCloseSession())
+	// Get Session
+	handleReply(s.ExecRPC(message.NewGet(message.FilterTypeSubtree, "")))
+
+	// Close Session
+	handleReply(s.ExecRPC(message.NewCloseSession()))
+
+}
+
+func handleReply(reply *message.RPCReply, err error) {
 	if err != nil {
 		panic(err)
 	}
