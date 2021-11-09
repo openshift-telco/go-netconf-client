@@ -105,7 +105,7 @@ func (t *transportBasicIO) Receive() ([]byte, error) {
 	}
 }
 
-func (t *transportBasicIO) SendHello(hello *HelloMessage) error {
+func (t *transportBasicIO) SendHello(hello *message.Hello) error {
 	val, err := xml.Marshal(hello)
 	if err != nil {
 		return err
@@ -117,8 +117,8 @@ func (t *transportBasicIO) SendHello(hello *HelloMessage) error {
 	return err
 }
 
-func (t *transportBasicIO) ReceiveHello() (*HelloMessage, error) {
-	hello := new(HelloMessage)
+func (t *transportBasicIO) ReceiveHello() (*message.Hello, error) {
+	hello := new(message.Hello)
 
 	val, err := t.Receive()
 	if err != nil {
