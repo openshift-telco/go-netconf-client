@@ -90,8 +90,6 @@ func (t *transportIO) SendHello(hello *message.Hello) error {
 	header := []byte(xml.Header)
 	val = append(header, val...)
 
-	println(string(val))
-
 	err = t.Send(val)
 	return err
 }
