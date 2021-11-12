@@ -27,6 +27,10 @@ func main() {
 	fmt.Println(s.Capabilities)
 	fmt.Println(s.SessionID)
 
+	capabilities := netconf.DefaultCapabilities
+	capabilities = append(capabilities, "urn:ietf:params:xml:ns:yang:ietf-event-notifications")
+	s.SendHello(&message.Hello{Capabilities: capabilities})
+
 	// Get Config
 	handleReply(s.ExecRPC(message.NewGetConfig(message.DatastoreRunning, message.FilterTypeSubtree, "")))
 

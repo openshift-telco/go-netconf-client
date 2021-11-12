@@ -9,10 +9,8 @@ package netconf
 import (
 	"bufio"
 	"bytes"
-	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/adetalhouet/go-netconf/netconf/message"
 	"io"
 	"regexp"
 	"strconv"
@@ -30,8 +28,6 @@ type Transport interface {
 	Send([]byte) error
 	Receive() ([]byte, error)
 	Close() error
-	ReceiveHello() (*message.Hello, error)
-	SendHello(hello *message.Hello) error
 	SetVersion(version string)
 }
 
@@ -88,30 +84,6 @@ func (t *transportBasicIO) Receive() ([]byte, error) {
 	}
 	separator = append(separator, []byte(msgSeparator)...)
 	return t.WaitForBytes(separator)
-}
-
-func (t *transportBasicIO) SendHello(hello *message.Hello) error {
-	val, err := xml.Marshal(hello)
-	if err != nil {
-		return err
-	}
-
-	header := []byte(xml.Header)
-	val = append(header, val...)
-	err = t.Send(val)
-	return err
-}
-
-func (t *transportBasicIO) ReceiveHello() (*message.Hello, error) {
-	hello := new(message.Hello)
-
-	val, err := t.Receive()
-	if err != nil {
-		return hello, err
-	}
-
-	err = xml.Unmarshal(val, hello)
-	return hello, err
 }
 
 func (t *transportBasicIO) Writeln(b []byte) (int, error) {

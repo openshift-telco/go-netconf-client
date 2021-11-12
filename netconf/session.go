@@ -7,6 +7,7 @@
 package netconf
 
 import (
+	"encoding/xml"
 	"github.com/adetalhouet/go-netconf/netconf/message"
 	"strings"
 )
@@ -15,6 +16,8 @@ import (
 var DefaultCapabilities = []string{
 	message.NetconfVersion10,
 	message.NetconfVersion11,
+	"urn:ietf:params:xml:ns:yang:ietf-event-notifications",
+	"urn:ietf:params:xml:ns:yang:ietf-yang-push",
 }
 
 // Session represents a NETCONF sessions with a remote NETCONF server
@@ -30,15 +33,9 @@ func NewSession(t Transport) *Session {
 	s.Transport = t
 
 	// Receive server Hello message
-	serverHello, _ := t.ReceiveHello()
+	serverHello, _ := s.ReceiveHello()
 	s.SessionID = serverHello.SessionID
 	s.Capabilities = serverHello.Capabilities
-
-	// Send our hello using default capabilities.
-	err := t.SendHello(&message.Hello{Capabilities: DefaultCapabilities})
-	if err != nil {
-		return nil
-	}
 
 	// Set Transport version
 	t.SetVersion("v1.0")
@@ -50,6 +47,30 @@ func NewSession(t Transport) *Session {
 	}
 
 	return s
+}
+
+func (s *Session) SendHello(hello *message.Hello) error {
+	val, err := xml.Marshal(hello)
+	if err != nil {
+		return err
+	}
+
+	header := []byte(xml.Header)
+	val = append(header, val...)
+	err = s.Transport.Send(val)
+	return err
+}
+
+func (s *Session) ReceiveHello() (*message.Hello, error) {
+	hello := new(message.Hello)
+
+	val, err := s.Transport.Receive()
+	if err != nil {
+		return hello, err
+	}
+
+	err = xml.Unmarshal(val, hello)
+	return hello, err
 }
 
 // Close is used to close and end a session
