@@ -282,7 +282,7 @@ func TestNewCommit(t *testing.T) {
 }
 
 func TestNewRPC(t *testing.T) {
-	expected:= "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><commit></commit></rpc>"
+	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><commit></commit></rpc>"
 	data := "<commit></commit>"
 
 	rpc := NewRPC(data)

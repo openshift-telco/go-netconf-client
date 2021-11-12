@@ -31,6 +31,9 @@ func main() {
 	capabilities = append(capabilities, "urn:ietf:params:xml:ns:yang:ietf-event-notifications")
 	s.SendHello(&message.Hello{Capabilities: capabilities})
 
+	d:= "<establish-subscription\n        xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\"\n        xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\">\n      <stream>yp:yang-push</stream>\n      <yp:xpath-filter>/mdt-oper:mdt-oper-data/mdt-subscriptions</yp:xpath-filter>\n      <yp:period>1000</yp:period>\n    </establish-subscription>"
+	handleReply(s.ExecRPC(message.NewRPC(d)))
+
 	// Get Config
 	handleReply(s.ExecRPC(message.NewGetConfig(message.DatastoreRunning, message.FilterTypeSubtree, "")))
 
