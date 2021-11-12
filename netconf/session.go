@@ -16,8 +16,6 @@ import (
 var DefaultCapabilities = []string{
 	message.NetconfVersion10,
 	message.NetconfVersion11,
-	"urn:ietf:params:xml:ns:yang:ietf-event-notifications",
-	"urn:ietf:params:xml:ns:yang:ietf-yang-push",
 }
 
 // Session represents a NETCONF sessions with a remote NETCONF server
