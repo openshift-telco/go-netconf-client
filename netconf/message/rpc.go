@@ -31,6 +31,7 @@ type RPC struct {
 // NewRPC formats an RPC message
 func NewRPC(data interface{}) *RPC {
 	reply := &RPC{}
+	reply.MessageID = uuid()
 	reply.Data = data
 
 	return reply
