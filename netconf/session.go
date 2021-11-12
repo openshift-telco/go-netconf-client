@@ -47,6 +47,7 @@ func NewSession(t Transport) *Session {
 	return s
 }
 
+// SendHello send the initial message through NETCONF to advertise supported capability.
 func (s *Session) SendHello(hello *message.Hello) error {
 	val, err := xml.Marshal(hello)
 	if err != nil {
@@ -59,6 +60,8 @@ func (s *Session) SendHello(hello *message.Hello) error {
 	return err
 }
 
+// ReceiveHello is the first message received when connecting to a NETCONF server.
+// It provides the supported capatiblities of the server.
 func (s *Session) ReceiveHello() (*message.Hello, error) {
 	hello := new(message.Hello)
 

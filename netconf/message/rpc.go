@@ -23,9 +23,9 @@ import (
 
 // RPC is used as a wrapper for any sent RPC
 type RPC struct {
-	XMLName   xml.Name `xml:"urn:ietf:params:xml:ns:netconf:base:1.0 rpc"`
-	MessageID string   `xml:"message-id,attr"`
-	Data interface{} `xml:",innerxml"`
+	XMLName   xml.Name    `xml:"urn:ietf:params:xml:ns:netconf:base:1.0 rpc"`
+	MessageID string      `xml:"message-id,attr"`
+	Data      interface{} `xml:",innerxml"`
 }
 
 // NewRPC formats an RPC message
