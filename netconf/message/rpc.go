@@ -25,6 +25,15 @@ import (
 type RPC struct {
 	XMLName   xml.Name `xml:"urn:ietf:params:xml:ns:netconf:base:1.0 rpc"`
 	MessageID string   `xml:"message-id,attr"`
+	Data interface{} `xml:",innerxml"`
+}
+
+// NewRPC formats an RPC message
+func NewRPC(data interface{}) *RPC {
+	reply := &RPC{}
+	reply.Data = data
+
+	return reply
 }
 
 // RPCError defines an error reply to a RPC request
