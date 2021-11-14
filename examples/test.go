@@ -61,19 +61,18 @@ func main() {
 
 func handleReply(reply interface{}, err error) {
 
-	r, ok := reply.(*message.RPCReply)
-	if !ok {
-		r, ok := reply.(*message.Notification)
-		{
-			if !ok {
-				panic(errors.New(fmt.Sprintf("unknown message %s", reply)))
-			}
-			fmt.Printf("%+v", r.RawReply)
-		}
-	}
-
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%+v", r.RawReply)
+
+	r, ok := reply.(*message.RPCReply)
+	if ok {
+		fmt.Printf("%+v", r.RawReply)
+	} else {
+		r, ok := reply.(*message.Notification)
+		if !ok {
+			panic(errors.New(fmt.Sprintf("unknown message %s", reply)))
+		}
+		fmt.Printf("%+v", r.RawReply)
+	}
 }
