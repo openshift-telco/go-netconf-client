@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf"
 	"github.com/adetalhouet/go-netconf/netconf/message"
@@ -31,7 +32,7 @@ func main() {
 	capabilities = append(capabilities, "urn:ietf:params:xml:ns:yang:ietf-event-notifications")
 	s.SendHello(&message.Hello{Capabilities: capabilities})
 
-	d:= "<establish-subscription\n        xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\"\n        xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\">\n      <stream>yp:yang-push</stream>\n      <yp:xpath-filter>/mdt-oper:mdt-oper-data/mdt-subscriptions</yp:xpath-filter>\n      <yp:period>1000</yp:period>\n    </establish-subscription>"
+	d := "<establish-subscription\n        xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\"\n        xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\">\n      <stream>yp:yang-push</stream>\n      <yp:xpath-filter>/mdt-oper:mdt-oper-data/mdt-subscriptions</yp:xpath-filter>\n      <yp:period>1000</yp:period>\n    </establish-subscription>"
 	handleReply(s.ExecRPC(message.NewRPC(d)))
 
 	// Get Config
@@ -58,9 +59,21 @@ func main() {
 
 }
 
-func handleReply(reply *message.RPCReply, err error) {
+func handleReply(reply interface{}, err error) {
+
+	r, ok := reply.(*message.RPCReply)
+	if !ok {
+		r, ok := reply.(*message.Notification)
+		{
+			if !ok {
+				panic(errors.New(fmt.Sprintf("unknown message %s", reply)))
+			}
+			fmt.Printf("%+v", r.RawReply)
+		}
+	}
+
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%+v", reply.RawReply)
+	fmt.Printf("%+v", r.RawReply)
 }

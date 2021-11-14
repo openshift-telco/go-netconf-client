@@ -16,10 +16,34 @@ limitations under the License.
 
 package message
 
+import "encoding/xml"
+
 const (
 	// NetconfNotificationXmlns is the XMLNS for the YANG model supporting NETCONF notification
 	NetconfNotificationXmlns = "urn:ietf:params:xml:ns:netconf:notification:1.0"
 )
+
+// Notification defines a reply to a Notification
+type Notification struct {
+	XMLName    xml.Name `xml:"notification"`
+	XMLNS      string   `xml:"xmlns,attr"`
+	EventTime  string   `xml:"eventTime"`
+	EventData  string   `xml:"eventData,omitempty"`
+	PushUpdate string   `xml:"push-update,omitempty"`
+	RawReply   string   `xml:"-"`
+}
+
+// NewNotification creates an instance of an Notification based on what was received
+func NewNotification(rawXML []byte) (*Notification, error) {
+	reply := &Notification{}
+	reply.RawReply = string(rawXML)
+
+	if err := xml.Unmarshal(rawXML, reply); err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
 
 // CreateSubscription represents the NETCONF `create-subscription` message.
 // https://datatracker.ietf.org/doc/html/rfc5277#section-2.1.1
