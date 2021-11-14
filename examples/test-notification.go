@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf"
 	"github.com/adetalhouet/go-netconf/netconf/message"
@@ -31,7 +32,7 @@ func main() {
 	s.SendHello(&message.Hello{Capabilities: capabilities})
 
 	d := "<establish-subscription\n        xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\"\n        xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\">\n      <stream>yp:yang-push</stream>\n      <yp:xpath-filter>/mdt-oper:mdt-oper-data/mdt-subscriptions</yp:xpath-filter>\n      <yp:period>1000</yp:period>\n    </establish-subscription>"
-	handleReply(s.ExecRPC(message.NewRPC(d)))
+	handleReplyN(s.ExecRPC(message.NewRPC(d)))
 
 	condition := false
 	counter := 5
@@ -51,3 +52,22 @@ func main() {
 		}
 	}
 }
+
+func handleReplyN(reply interface{}, err error) {
+
+	if err != nil {
+		panic(err)
+	}
+
+	r, ok := reply.(*message.RPCReply)
+	if ok {
+		fmt.Printf("%+v", r.RawReply)
+	} else {
+		r, ok := reply.(*message.Notification)
+		if !ok {
+			panic(errors.New(fmt.Sprintf("unknown message %s", reply)))
+		}
+		fmt.Printf("%+v", r.RawReply)
+	}
+}
+
