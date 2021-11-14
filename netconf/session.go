@@ -35,15 +35,6 @@ func NewSession(t Transport) *Session {
 	s.SessionID = serverHello.SessionID
 	s.Capabilities = serverHello.Capabilities
 
-	// Set Transport version
-	t.SetVersion("v1.0")
-	for _, capability := range s.Capabilities {
-		if strings.Contains(capability, message.NetconfVersion11) {
-			t.SetVersion("v1.1")
-			break
-		}
-	}
-
 	return s
 }
 
@@ -57,11 +48,22 @@ func (s *Session) SendHello(hello *message.Hello) error {
 	header := []byte(xml.Header)
 	val = append(header, val...)
 	err = s.Transport.Send(val)
+
+	// Set Transport version after sending hello-message,
+	// so the hello-message is sent using netconf:1.0 framing
+	s.Transport.SetVersion("v1.0")
+	for _, capability := range s.Capabilities {
+		if strings.Contains(capability, message.NetconfVersion11) {
+			s.Transport.SetVersion("v1.1")
+			break
+		}
+	}
+
 	return err
 }
 
 // ReceiveHello is the first message received when connecting to a NETCONF server.
-// It provides the supported capatiblities of the server.
+// It provides the supported capabilities of the server.
 func (s *Session) ReceiveHello() (*message.Hello, error) {
 	hello := new(message.Hello)
 
