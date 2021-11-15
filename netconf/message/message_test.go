@@ -267,6 +267,20 @@ func TestNewCreateSubscription(t *testing.T) {
 	}
 }
 
+func TestNewEstablishSubscription(t *testing.T) {
+	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><establish-subscription xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\" xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\"><stream>yp:yang-push</stream><yp:xpath-filter>/mdt-oper:mdt-oper-data/mdt-subscriptions</yp:xpath-filter><yp:period>1000</yp:period></establish-subscription></rpc>"
+
+	rpc := NewEstablishSubscription("<establish-subscription xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\" xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\"><stream>yp:yang-push</stream><yp:xpath-filter>/mdt-oper:mdt-oper-data/mdt-subscriptions</yp:xpath-filter><yp:period>1000</yp:period></establish-subscription>")
+	output, err := xml.Marshal(rpc)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	if got, want := StripUUID(string(output)), StripUUID(expected); got != want {
+		t.Errorf("TestNewEstablishSubscription:\nGot:%s\nWant:\n%s", got, want)
+	}
+}
+
 func TestNewCommit(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><commit></commit></rpc>"
 

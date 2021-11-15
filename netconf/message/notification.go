@@ -49,24 +49,51 @@ func NewNotification(rawXML []byte) (*Notification, error) {
 // https://datatracker.ietf.org/doc/html/rfc5277#section-2.1.1
 type CreateSubscription struct {
 	RPC
-	Subscription Subscription `xml:"create-subscription"`
+	Subscription CreateSubscriptionData `xml:"create-subscription"`
 }
 
-// Subscription is the struct to create a `create-subscription` message
-type Subscription struct {
+// CreateSubscriptionData is the struct to create a `create-subscription` message
+type CreateSubscriptionData struct {
 	XMLNS     string `xml:"xmlns,attr"`
-	Stream    string `xml:"stream,omitempty"`
+	Stream    string `xml:"stream,omitempty"` // default is NETCONF
 	StartTime string `xml:"startTime,omitempty"`
 	StopTime  string `xml:"stopTime,omitempty"`
+}
+
+// NewCreateSubscriptionDefault can be used to create a `create-subscription` message for the NETCONF stream.
+func NewCreateSubscriptionDefault() *CreateSubscription {
+	var rpc CreateSubscription
+	var sub = &CreateSubscriptionData{
+		NetconfNotificationXmlns, "", "", "",
+	}
+	rpc.Subscription = *sub
+	rpc.MessageID = uuid()
+	return &rpc
 }
 
 // NewCreateSubscription can be used to create a `create-subscription` message.
 func NewCreateSubscription(stopTime string, startTime string, stream string) *CreateSubscription {
 	var rpc CreateSubscription
-	var sub = &Subscription{
+	var sub = &CreateSubscriptionData{
 		NetconfNotificationXmlns, stream, startTime, stopTime,
 	}
 	rpc.Subscription = *sub
+	rpc.MessageID = uuid()
+	return &rpc
+}
+
+// EstablishSubscription represents the NETCONF `establish-subscription` message.
+// https://datatracker.ietf.org/doc/html/rfc8639#section-2.4.2
+// FIXME very very weak implementation: there is no validation made on the schema
+type EstablishSubscription struct {
+	RPC
+	Data string `xml:",innerxml"`
+}
+
+// NewEstablishSubscription can be used to create a `establish-subscription` message.
+func NewEstablishSubscription(data string) *EstablishSubscription {
+	var rpc EstablishSubscription
+	rpc.Data = data
 	rpc.MessageID = uuid()
 	return &rpc
 }

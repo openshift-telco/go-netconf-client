@@ -8,7 +8,6 @@ package netconf
 
 import (
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf/message"
 	"strings"
@@ -42,6 +41,6 @@ func (s *Session) ExecRPC(operation interface{}) (interface{}, error) {
 	} else if strings.Contains(rawReply, "<notification") {
 		return message.NewNotification(rawXML)
 	} else {
-		return nil, errors.New(fmt.Sprintf("Unknown received message: %s", rawReply))
+		return nil, fmt.Errorf("Unknown received message: %s", rawReply)
 	}
 }
