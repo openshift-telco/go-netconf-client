@@ -30,6 +30,7 @@ type Notification struct {
 	EventTime  string   `xml:"eventTime"`
 	EventData  string   `xml:"eventData,omitempty"`
 	PushUpdate string   `xml:"push-update,omitempty"`
+	Data      string     `xml:",innerxml"`
 	RawReply   string   `xml:"-"`
 }
 

@@ -12,8 +12,8 @@ import (
 	"github.com/adetalhouet/go-netconf/netconf/message"
 )
 
-// ExecRPC is used to execute an RPC method
-func (s *Session) ExecRPC(operation interface{}) (*message.RPCReply, error) {
+// ExecNotification is used to execute an RPC method regarding NETCONF notification
+func (s *Session) ExecNotification(operation interface{}) (*message.Notification, error) {
 	request, err := xml.Marshal(operation)
 	if err != nil {
 		return nil, err
@@ -28,13 +28,13 @@ func (s *Session) ExecRPC(operation interface{}) (*message.RPCReply, error) {
 		return nil, err
 	}
 
-	fmt.Println("\nReceiving RPC's answer")
+	fmt.Println("\nReceiving Notification's answer")
 	rawXML, err := s.Transport.Receive()
 	if err != nil {
 		return nil, err
 	}
 
-	reply, err := message.NewRPCReply(rawXML)
+	reply, err := message.NewNotification(rawXML)
 	if err != nil {
 		return nil, err
 	}

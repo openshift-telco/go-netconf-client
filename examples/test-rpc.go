@@ -17,7 +17,7 @@ func main() {
 	// Create NETCONF session that is used to received NETCONF notification
 	notificationSession := createSession()
 	d := "<establish-subscription xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\" xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\"><stream>yp:yang-push</stream><yp:xpath-filter>/bgp-ios-xe-oper:bgp-state-data/neighbors</yp:xpath-filter><yp:period>1000</yp:period></establish-subscription>"
-	handleReply(notificationSession.ExecRPC(message.NewEstablishSubscription(d)))
+	handleReply(notificationSession.ExecNotification(message.NewEstablishSubscription(d)))
 
 	wg.Add(1)
 	go func() {
@@ -30,7 +30,10 @@ func main() {
 	// Wait for notification thread to finish
 	wg.Wait()
 	handleReply(notificationSession.ExecRPC(message.NewCloseSession()))
-	notificationSession.Close()
+	err := notificationSession.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
 
