@@ -31,6 +31,7 @@ type Notification struct {
 	EventData  string   `xml:"eventData,omitempty"`
 	PushUpdate string   `xml:"push-update,omitempty"`
 	RawReply   string   `xml:"-"`
+	Data       string   `xml:",innerxml"`
 }
 
 // NewNotification creates an instance of an Notification based on what was received

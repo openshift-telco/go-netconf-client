@@ -10,11 +10,10 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf/message"
-	"strings"
 )
 
 // ExecRPC is used to execute an RPC method
-func (s *Session) ExecRPC(operation interface{}) (interface{}, error) {
+func (s *Session) ExecRPC(operation interface{}) (*message.RPCReply, error) {
 	request, err := xml.Marshal(operation)
 	if err != nil {
 		return nil, err
@@ -35,12 +34,10 @@ func (s *Session) ExecRPC(operation interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	var rawReply = string(rawXML)
-	if strings.Contains(rawReply, "<rpc-reply") {
-		return message.NewRPCReply(rawXML)
-	} else if strings.Contains(rawReply, "<notification") {
-		return message.NewNotification(rawXML)
-	} else {
-		return nil, fmt.Errorf("Unknown received message: %s", rawReply)
+	reply, err := message.NewRPCReply(rawXML)
+	if err != nil {
+		return nil, err
 	}
+
+	return reply, nil
 }
