@@ -10,6 +10,10 @@ golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
+# golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
+## explicit
 # golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e
 ## explicit
 golang.org/x/sys/cpu
+# golang.org/x/tools v0.1.7
+## explicit
