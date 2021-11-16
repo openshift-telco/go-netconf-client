@@ -10,6 +10,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf/message"
+	"strings"
 )
 
 // ExecRPC is used to execute an RPC method
@@ -34,10 +35,14 @@ func (s *Session) ExecRPC(operation interface{}) (*message.RPCReply, error) {
 		return nil, err
 	}
 
-	reply, err := message.NewRPCReply(rawXML)
-	if err != nil {
-		return nil, err
+	// FIXME better handle different messages:  notification and rpc-reply.
+	// For now, we discard notification, as they *should* be handled separately.
+	// In a case of establish-subscription, sometimes the device sends the notification
+	// before sending the rpc-reply.
+	var rawReply = string(rawXML)
+	if strings.Contains(rawReply, "<rpc-reply") {
+		return message.NewRPCReply(rawXML)
 	}
 
-	return reply, nil
+	return nil, fmt.Errorf("discarding received message: %s", rawReply)
 }
