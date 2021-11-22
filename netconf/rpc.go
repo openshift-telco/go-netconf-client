@@ -13,8 +13,31 @@ import (
 	"strings"
 )
 
-// ExecRPC is used to execute an RPC method
-func (s *Session) ExecRPC(operation interface{}) (*message.RPCReply, error) {
+// SendRPC is used to send an RPC method and receive the response asynchronously.
+func (session *Session) SendRPC(messageID string, operation interface{}, callback Callback) error {
+
+	// register the listener for the message
+	session.Listener.Register(messageID, callback)
+
+	request, err := xml.Marshal(operation)
+	if err != nil {
+		return err
+	}
+
+	header := []byte(xml.Header)
+	request = append(header, request...)
+
+	fmt.Println(fmt.Sprintf("\n\nSending RPC"))
+	err = session.Transport.Send(request)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ExecRPC is used to execute an RPC method and receive the response synchronously
+func (session *Session) ExecRPC(operation interface{}) (*message.RPCReply, error) {
 	request, err := xml.Marshal(operation)
 	if err != nil {
 		return nil, err
@@ -24,13 +47,13 @@ func (s *Session) ExecRPC(operation interface{}) (*message.RPCReply, error) {
 	request = append(header, request...)
 
 	fmt.Println(fmt.Sprintf("\n\nSending RPC"))
-	err = s.Transport.Send(request)
+	err = session.Transport.Send(request)
 	if err != nil {
 		return nil, err
 	}
 
 	fmt.Println("\nReceiving RPC's answer")
-	rawXML, err := s.Transport.Receive()
+	rawXML, err := session.Transport.Receive()
 	if err != nil {
 		return nil, err
 	}

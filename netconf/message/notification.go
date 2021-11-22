@@ -25,13 +25,14 @@ const (
 
 // Notification defines a reply to a Notification
 type Notification struct {
-	XMLName    xml.Name `xml:"notification"`
-	XMLNS      string   `xml:"xmlns,attr"`
-	EventTime  string   `xml:"eventTime"`
-	EventData  string   `xml:"eventData,omitempty"`
-	PushUpdate string   `xml:"push-update,omitempty"`
-	RawReply   string   `xml:"-"`
-	Data       string   `xml:",innerxml"`
+	XMLName        xml.Name `xml:"notification"`
+	XMLNS          string   `xml:"xmlns,attr"`
+	EventTime      string   `xml:"eventTime"`
+	EventData      string   `xml:"eventData,omitempty"`
+	PushUpdate     string   `xml:"push-update,omitempty"`
+	SubscriptionID string   `xml:"push-update>subscription-id"`
+	RawReply       string   `xml:"-"`
+	Data           string   `xml:",innerxml"`
 }
 
 // NewNotification creates an instance of an Notification based on what was received

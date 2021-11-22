@@ -1,106 +1,79 @@
 package main
 
 import (
-	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf"
 	"github.com/adetalhouet/go-netconf/netconf/message"
-	"log"
-	"sync"
-
 	"golang.org/x/crypto/ssh"
+	"log"
+	"time"
 )
 
 func main() {
 
-	var wg sync.WaitGroup
+	// Create NETCONF session
+	session := createSession()
 
-	// Create NETCONF session that is used to received NETCONF notification
-	notificationSession := createSession()
+	// Define message to send
 	d := "<establish-subscription xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\" xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\"><stream>yp:yang-push</stream><yp:xpath-filter>/bgp-ios-xe-oper:bgp-state-data/neighbors</yp:xpath-filter><yp:period>1000</yp:period></establish-subscription>"
-	handleReply(notificationSession.ExecRPC(message.NewEstablishSubscription(d)))
+	m := message.NewEstablishSubscription(d)
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		receiveNotificationAsync(notificationSession)
-	}()
+	// Define callback function for the rpc-reply
+	callback := func(event netconf.Event) {
+		reply := event.RPCReply()
+		if reply == nil {
+			println("Failed to execute RPC")
+		}
+		if event.EventID() == m.MessageID {
+			println("Successfully executed RPC")
+			println(reply.RawReply)
+			// if all went well, we register a callback for notification
+			session.Listener.Register(
+				reply.SubscriptionId, session.DefaultLogNotificationCallback(reply.SubscriptionId),
+			)
+		}
+	}
 
-	execRPC()
-
-	// Wait for notification thread to finish
-	wg.Wait()
-	handleReply(notificationSession.ExecRPC(message.NewCloseSession()))
-	notificationSession.Close()
-
-}
-
-func handleReply(reply interface{}, err error) {
-
+	// Send request
+	err := session.SendRPC(m.MessageID, m, callback)
 	if err != nil {
 		panic(err)
 	}
 
-	r, ok := reply.(*message.RPCReply)
-	if ok {
-		fmt.Printf("%+v", r.RawReply)
-	} else {
-		r, ok := reply.(*message.Notification)
-		if !ok {
-			panic(fmt.Errorf("unknown message %s", reply))
-		}
-		fmt.Printf("%+v", r.RawReply)
-	}
+	//execRPC(session)
+
+	defer session.Close()
+	time.Sleep(15 * time.Second)
 }
 
-func execRPC() {
-	// Create a second NETCONF session to perform NETCONF operations
-	s := createSession()
+func execRPC(session *netconf.Session) {
 
 	// Get Config
-	handleReply(s.ExecRPC(message.NewGetConfig(message.DatastoreRunning, message.FilterTypeSubtree, "")))
+	g := message.NewGetConfig(message.DatastoreRunning, message.FilterTypeSubtree, "")
+	session.SendRPC(g.MessageID, g, session.DefaultLogRpcReplyCallback(g.MessageID))
 
 	// Get - some issues
 	//handleReply(s.ExecRPC(message.NewGet(message.FilterTypeSubtree, "")))
 
 	// Lock
-	handleReply(s.ExecRPC(message.NewLock(message.DatastoreCandidate)))
+	l := message.NewLock(message.DatastoreCandidate)
+	session.SendRPC(l.MessageID, l, session.DefaultLogRpcReplyCallback(l.MessageID))
 
 	// EditConfig - change hostname
 	data := "<native xmlns=\"http://cisco.com/ns/yang/Cisco-IOS-XE-native\"><hostname>r1</hostname></native>"
-	handleReply(s.ExecRPC(message.NewEditConfig(message.DatastoreCandidate, message.DefaultOperationTypeMerge, data)))
+	e := message.NewEditConfig(message.DatastoreCandidate, message.DefaultOperationTypeMerge, data)
+	session.SendRPC(e.MessageID, e, session.DefaultLogRpcReplyCallback(e.MessageID))
 
 	// Commit
-	handleReply(s.ExecRPC(message.NewCommit()))
+	c := message.NewCommit()
+	session.SendRPC(c.MessageID, c, session.DefaultLogRpcReplyCallback(c.MessageID))
 
 	// Unlock
-	handleReply(s.ExecRPC(message.NewUnlock(message.DatastoreCandidate)))
+	u := message.NewUnlock(message.DatastoreCandidate)
+	session.SendRPC(u.MessageID, u, session.DefaultLogRpcReplyCallback(u.MessageID))
 
 	// Close Session
-	handleReply(s.ExecRPC(message.NewCloseSession()))
-	err := s.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func receiveNotificationAsync(s *netconf.Session) {
-	condition := false
-	counter := 5
-	for ok := true; ok; ok = !condition {
-		rawXML, err := s.Transport.Receive()
-		if err != nil {
-			panic(err)
-		}
-
-		var rawReply = string(rawXML)
-		fmt.Printf("%+v", rawReply)
-
-		counter--
-
-		if counter == 0 {
-			condition = true
-		}
-	}
+	d := message.NewCloseSession()
+	session.SendRPC(d.MessageID, d, session.DefaultLogRpcReplyCallback(d.MessageID))
 }
 
 func createSession() *netconf.Session {
