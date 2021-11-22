@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf"
 	"github.com/adetalhouet/go-netconf/netconf/message"
 	"golang.org/x/crypto/ssh"
@@ -24,9 +25,8 @@ func main() {
 			println("Failed to execute RPC")
 		}
 		if event.EventID() == m.MessageID {
-			println("Successfully executed RPC")
-			println(reply.RawReply)
-			// if all went well, we register a callback for notification
+			println(fmt.Sprintf("Successfully executed Notification stream registration with subscritpionID: %s", reply.SubscriptionId))
+						// if all went well, we register a callback for notification
 			session.Listener.Register(
 				reply.SubscriptionId, session.DefaultLogNotificationCallback(reply.SubscriptionId),
 			)
