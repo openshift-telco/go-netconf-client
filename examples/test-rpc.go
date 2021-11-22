@@ -39,7 +39,7 @@ func main() {
 		panic(err)
 	}
 
-	//execRPC(session)
+	execRPC(session)
 
 	defer session.Close()
 	time.Sleep(15 * time.Second)

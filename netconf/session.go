@@ -135,7 +135,6 @@ func (session *Session) listen() {
 // DefaultLogRpcReplyCallback defines a default callback function
 func (session *Session) DefaultLogRpcReplyCallback(eventId string) Callback {
 	return func(event Event) {
-		session.Listener.Remove(eventId)
 		reply := event.RPCReply()
 		if reply == nil {
 			println("Failed to execute RPC")
@@ -150,7 +149,6 @@ func (session *Session) DefaultLogRpcReplyCallback(eventId string) Callback {
 // DefaultLogNotificationCallback defines a default callback function
 func (session *Session) DefaultLogNotificationCallback(eventId string) Callback {
 	return func(event Event) {
-		session.Listener.Remove(eventId)
 		reply := event.Notification()
 		if reply == nil {
 			println("Failed to execute Notification")
