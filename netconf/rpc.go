@@ -27,7 +27,7 @@ func (session *Session) SendRPC(messageID string, operation interface{}, callbac
 	header := []byte(xml.Header)
 	request = append(header, request...)
 
-	fmt.Println(fmt.Sprintf("\n\nSending RPC"))
+	fmt.Println(fmt.Sprintf("\nSending RPC"))
 	err = session.Transport.Send(request)
 	if err != nil {
 		return err

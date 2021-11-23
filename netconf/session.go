@@ -97,8 +97,10 @@ func (session *Session) Close() error {
 // Listen starts a goroutine that listen to incoming messages and dispatch them as then are processed.
 func (session *Session) listen() {
 	go func() {
-		for {
+		for !session.IsClosed {
+			println(fmt.Sprintf("waiting for incoming message"))
 			rawXML, err := session.Transport.Receive()
+			println(fmt.Sprintf("received message %s", rawXML))
 			if err != nil {
 				println(fmt.Errorf("failed to receive message %s", err))
 				continue
@@ -123,12 +125,8 @@ func (session *Session) listen() {
 			} else {
 				println(fmt.Errorf(fmt.Sprintf("unknown received message: \n%s", rawXML)))
 			}
-
-			if session.IsClosed {
-				println("exist receiving loop")
-				break
-			}
 		}
+		println("exist receiving loop")
 	}()
 }
 

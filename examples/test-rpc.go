@@ -31,6 +31,7 @@ func main() {
 				reply.SubscriptionId, session.DefaultLogNotificationCallback(reply.SubscriptionId),
 			)
 		}
+		println("WHAT")
 	}
 
 	// Send request
@@ -41,7 +42,7 @@ func main() {
 
 	execRPC(session)
 
-	defer session.Close()
+	//defer session.Close()
 	time.Sleep(15 * time.Second)
 }
 
