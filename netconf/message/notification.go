@@ -20,7 +20,7 @@ import "encoding/xml"
 
 const (
 	// NetconfNotificationXmlns is the XMLNS for the YANG model supporting NETCONF notification
-	NetconfNotificationXmlns         = "urn:ietf:params:xml:ns:netconf:notification:1.0"
+	NetconfNotificationXmlns = "urn:ietf:params:xml:ns:netconf:notification:1.0"
 	// NetconfNotificationStreamHandler identifies the callback registration for a `create-subscription`
 	NetconfNotificationStreamHandler = "DEFAULT_NOTIFICATION_STREAM"
 )
