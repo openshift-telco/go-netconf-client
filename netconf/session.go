@@ -21,11 +21,12 @@ var DefaultCapabilities = []string{
 
 // Session represents a NETCONF sessions with a remote NETCONF server
 type Session struct {
-	Transport    Transport
-	SessionID    int
-	Capabilities []string
-	IsClosed     bool
-	Listener     *Dispatcher
+	Transport                   Transport
+	SessionID                   int
+	Capabilities                []string
+	IsClosed                    bool
+	Listener                    *Dispatcher
+	IsNotificationStreamCreated bool
 }
 
 // NewSession creates a new NETCONF session using the provided transport layer.
@@ -97,12 +98,10 @@ func (session *Session) Close() error {
 // Listen starts a goroutine that listen to incoming messages and dispatch them as then are processed.
 func (session *Session) listen() {
 	go func() {
-		for !session.IsClosed {
-			println(fmt.Sprintf("waiting for incoming message"))
+		for ok := true; ok; ok = !session.IsClosed {
 			rawXML, err := session.Transport.Receive()
-			println(fmt.Sprintf("received message %s", rawXML))
 			if err != nil {
-				println(fmt.Errorf("failed to receive message %s", err))
+				// What should we do here?
 				continue
 			}
 			var rawReply = string(rawXML)
@@ -118,42 +117,20 @@ func (session *Session) listen() {
 			} else if strings.Contains(rawReply, "<notification") {
 				notification, err := message.NewNotification(rawXML)
 				if err != nil {
-					println(fmt.Errorf("failed to marshall message into an Notification. %s", err))
+					println(fmt.Printf("failed to marshall message into an Notification. %s\n", err))
 					continue
 				}
-				session.Listener.Dispatch(notification.SubscriptionID, 1, notification)
+				// In case we are using straight create-subscription, there is no way to discern who is the owner
+				// of the received notification, hence we use a default handler.
+				if notification.SubscriptionID == "" {
+					session.Listener.Dispatch(message.NetconfNotificationStreamHandler, 1, notification)
+				} else {
+					session.Listener.Dispatch(notification.SubscriptionID, 1, notification)
+				}
 			} else {
 				println(fmt.Errorf(fmt.Sprintf("unknown received message: \n%s", rawXML)))
 			}
 		}
-		println("exist receiving loop")
+		println("exit receiving loop")
 	}()
-}
-
-// DefaultLogRpcReplyCallback defines a default callback function
-func (session *Session) DefaultLogRpcReplyCallback(eventId string) Callback {
-	return func(event Event) {
-		reply := event.RPCReply()
-		if reply == nil {
-			println("Failed to execute RPC")
-		}
-		if event.EventID() == eventId {
-			println("Successfully executed RPC")
-			println(reply.RawReply)
-		}
-	}
-}
-
-// DefaultLogNotificationCallback defines a default callback function
-func (session *Session) DefaultLogNotificationCallback(eventId string) Callback {
-	return func(event Event) {
-		reply := event.Notification()
-		if reply == nil {
-			println("Failed to execute Notification")
-		}
-		if event.EventID() == eventId {
-			println("Successfully executed Notification")
-			println(reply.RawReply)
-		}
-	}
 }

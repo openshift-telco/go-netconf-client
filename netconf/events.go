@@ -18,7 +18,7 @@ package netconf
 
 import (
 	"github.com/adetalhouet/go-netconf/netconf/message"
-	"sync"
+	"time"
 )
 
 /**
@@ -44,38 +44,36 @@ func (t EventType) String() string {
 type Callback func(Event)
 
 // Dispatcher objects can register callbacks for specific events, then when
-// those events occur, dispatch them to all callback functions.
+// those events occur, dispatch them its according callback functions.
 type Dispatcher struct {
-	rwLock    sync.RWMutex
 	callbacks map[string]Callback
 }
 
-// Init a dispatcher creating the callbacks map.
+// init a dispatcher creating the callbacks map.
 func (d *Dispatcher) init() {
-	d.rwLock = sync.RWMutex{}
 	d.callbacks = make(map[string]Callback)
 }
 
-// Register a callback function for the specified event type.
+// Register a callback function for the specified eventID.
 func (d *Dispatcher) Register(eventID string, callback Callback) {
-	d.rwLock.Lock()
-	defer d.rwLock.Unlock()
 	d.callbacks[eventID] = callback
 }
 
-// Remove a callback function for the specified event type.
+// Remove a callback function for the specified eventID.
 func (d *Dispatcher) Remove(eventID string) {
-	d.rwLock.Lock()
-	defer d.rwLock.Unlock()
-
 	delete(d.callbacks, eventID)
 }
 
-// Dispatch an event, ensuring that the event is properly formatted.
-func (d *Dispatcher) Dispatch(eventID string, eventType EventType, value interface{}) {
-	d.rwLock.RLock()
-	defer d.rwLock.RUnlock()
+// WaitForMessages waits for all messages in the queue to be processed
+// TODO support timeout
+func (d *Dispatcher) WaitForMessages() {
+	for len(d.callbacks) != 0 {
+		time.Sleep(1 * time.Second)
+	}
+}
 
+// Dispatch an event by triggering its associated callback.
+func (d *Dispatcher) Dispatch(eventID string, eventType EventType, value interface{}) {
 	// Create the event
 	e := &event{
 		eventID: eventID,
@@ -86,6 +84,8 @@ func (d *Dispatcher) Dispatch(eventID string, eventType EventType, value interfa
 	d.callbacks[eventID](e)
 
 	// In case of rpc-reply, auto-remove registration
+	// If it is a notification, we need to keep the registration active
+	// as we can have still receive notification related to the subscriptionID
 	switch eventType.String() {
 	case "rpc-reply":
 		d.Remove(eventID)
@@ -95,8 +95,8 @@ func (d *Dispatcher) Dispatch(eventID string, eventType EventType, value interfa
 
 }
 
-// Event represents actions that occur during consensus. Listeners can
-// register callbacks with event handlers for specific event types.
+// Event represents actions that occur during NETCONF exchange. Listeners can
+// register callbacks with event handlers when creating a new RPC.
 type Event interface {
 	EventID() string
 	Value() interface{}
@@ -120,6 +120,7 @@ func (e *event) Value() interface{} {
 	return e.value
 }
 
+// RPCReply returns an RPCReply from the associated value.
 func (e *event) RPCReply() *message.RPCReply {
 	r, ok := e.value.(*message.RPCReply)
 	if ok {
@@ -128,6 +129,7 @@ func (e *event) RPCReply() *message.RPCReply {
 	return nil
 }
 
+// Notification returns a Notification from the associated value.
 func (e *event) Notification() *message.Notification {
 	n, ok := e.value.(*message.Notification)
 	if ok {

@@ -11,79 +11,117 @@ import (
 
 func main() {
 
-	// Create NETCONF session
-	session := createSession()
+	// java -jar lighty-notifications-device-15.0.1-SNAPSHOT.jar 12345
+	testNotification()
 
-	// Define message to send
-	d := "<establish-subscription xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\" xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\"><stream>yp:yang-push</stream><yp:xpath-filter>/bgp-ios-xe-oper:bgp-state-data/neighbors</yp:xpath-filter><yp:period>1000</yp:period></establish-subscription>"
-	m := message.NewEstablishSubscription(d)
-
-	// Define callback function for the rpc-reply
-	callback := func(event netconf.Event) {
-		reply := event.RPCReply()
-		if reply == nil {
-			println("Failed to execute RPC")
-		}
-		if event.EventID() == m.MessageID {
-			println(fmt.Sprintf("Successfully executed Notification stream registration with subscritpionID: %s", reply.SubscriptionId))
-						// if all went well, we register a callback for notification
-			session.Listener.Register(
-				reply.SubscriptionId, session.DefaultLogNotificationCallback(reply.SubscriptionId),
-			)
-		}
-		println("WHAT")
-	}
-
-	// Send request
-	err := session.SendRPC(m.MessageID, m, callback)
-	if err != nil {
-		panic(err)
-	}
-
-	execRPC(session)
-
-	//defer session.Close()
-	time.Sleep(15 * time.Second)
+	// java -jar lighty-toaster-multiple-devices-15.0.1-SNAPSHOT.jar --starting-port 20000 --device-count 200 --thread-pool-size 200
+	//testRPC()
 }
 
+func testNotification() {
+
+	notificationSession := createSession(12345)
+
+	callback := func(event netconf.Event) {
+		reply := event.Notification()
+		println(reply.RawReply)
+	}
+	notificationSession.CreateNotificationStream("", "", "", callback)
+
+	triggerNotification := "    <triggerDataNotification xmlns=\"yang:lighty:test:notifications\">\n        <ClientId>0</ClientId>\n        <Count>5</Count>\n        <Delay>1</Delay>\n        <Payload>just simple notification</Payload>\n    </triggerDataNotification>"
+	rpc := message.NewRPC(triggerNotification)
+	notificationSession.SyncRPC(rpc)
+
+	err := notificationSession.CreateNotificationStream("", "", "", callback)
+	if err == nil {
+		panic("must fail")
+	}
+
+	d := message.NewCloseSession()
+	notificationSession.AsyncRPC(d, defaultLogRpcReplyCallback(d.MessageID))
+
+	notificationSession.Listener.Remove(message.NetconfNotificationStreamHandler)
+	notificationSession.Listener.WaitForMessages()
+
+	notificationSession.Close()
+}
+
+func testRPC() {
+	for i := 0; i < 200; i++ {
+		i := i
+		go func() {
+			number := 20000 + i
+			session := createSession(number)
+			defer session.Close()
+			execRPC(session)
+		}()
+	}
+}
+
+// Execute all types of RPC against the device
+// Add a 100ms delay after each RPC to leave enough time for the device to reply
+// Else, too many request and things get bad.
 func execRPC(session *netconf.Session) {
 
 	// Get Config
 	g := message.NewGetConfig(message.DatastoreRunning, message.FilterTypeSubtree, "")
-	session.SendRPC(g.MessageID, g, session.DefaultLogRpcReplyCallback(g.MessageID))
+	session.AsyncRPC(g, defaultLogRpcReplyCallback(g.MessageID))
+	time.Sleep(100 * time.Millisecond)
 
-	// Get - some issues
-	//handleReply(s.ExecRPC(message.NewGet(message.FilterTypeSubtree, "")))
+	// Get
+	gt := message.NewGet("", "")
+	session.AsyncRPC(gt, defaultLogRpcReplyCallback(gt.MessageID))
+	time.Sleep(100 * time.Millisecond)
 
 	// Lock
 	l := message.NewLock(message.DatastoreCandidate)
-	session.SendRPC(l.MessageID, l, session.DefaultLogRpcReplyCallback(l.MessageID))
+	session.AsyncRPC(l, defaultLogRpcReplyCallback(l.MessageID))
+	time.Sleep(100 * time.Millisecond)
 
-	// EditConfig - change hostname
-	data := "<native xmlns=\"http://cisco.com/ns/yang/Cisco-IOS-XE-native\"><hostname>r1</hostname></native>"
+	// EditConfig
+	data := "<toaster xmlns=\"http://netconfcentral.org/ns/toaster\">\n    <darknessFactor>750</darknessFactor>\n</toaster>"
 	e := message.NewEditConfig(message.DatastoreCandidate, message.DefaultOperationTypeMerge, data)
-	session.SendRPC(e.MessageID, e, session.DefaultLogRpcReplyCallback(e.MessageID))
+	session.AsyncRPC(e, defaultLogRpcReplyCallback(e.MessageID))
+	time.Sleep(100 * time.Millisecond)
 
 	// Commit
 	c := message.NewCommit()
-	session.SendRPC(c.MessageID, c, session.DefaultLogRpcReplyCallback(c.MessageID))
+	session.AsyncRPC(c, defaultLogRpcReplyCallback(c.MessageID))
+	time.Sleep(100 * time.Millisecond)
 
 	// Unlock
 	u := message.NewUnlock(message.DatastoreCandidate)
-	session.SendRPC(u.MessageID, u, session.DefaultLogRpcReplyCallback(u.MessageID))
+	session.AsyncRPC(u, defaultLogRpcReplyCallback(u.MessageID))
+	time.Sleep(100 * time.Millisecond)
+
+	// RPC
+	d := "    <make-toast xmlns=\"http://netconfcentral.org/ns/toaster\">\n        <toasterDoneness>9</toasterDoneness>\n        <toasterToastType>frozen-waffle</toasterToastType>\n     </make-toast>"
+	rpc := message.NewRPC(d)
+	session.AsyncRPC(rpc, defaultLogRpcReplyCallback(rpc.MessageID))
+	time.Sleep(100 * time.Millisecond)
+
+	// RPCs
+	rpc2 := message.NewRPC(d)
+	session.SyncRPC(rpc2)
+	rpc3 := message.NewRPC(d)
+	session.SyncRPC(rpc3)
+	rpc4 := message.NewRPC(d)
+	session.SyncRPC(rpc4)
 
 	// Close Session
-	d := message.NewCloseSession()
-	session.SendRPC(d.MessageID, d, session.DefaultLogRpcReplyCallback(d.MessageID))
+	d2 := message.NewCloseSession()
+	session.AsyncRPC(d2, defaultLogRpcReplyCallback(d2.MessageID))
+
+	session.Listener.WaitForMessages()
 }
 
-func createSession() *netconf.Session {
+func createSession(port int) *netconf.Session {
 	sshConfig := &ssh.ClientConfig{
-		User:            "lab",
-		Auth:            []ssh.AuthMethod{ssh.Password("lab")},
+		User:            "admin",
+		Auth:            []ssh.AuthMethod{ssh.Password("admin")},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	s, err := netconf.DialSSH("10.64.1.54:32035", sshConfig)
+	s, err := netconf.DialSSH(fmt.Sprintf("127.0.0.1:%d", port), sshConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -92,5 +130,19 @@ func createSession() *netconf.Session {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return s
+}
+
+func defaultLogRpcReplyCallback(eventId string) netconf.Callback {
+	return func(event netconf.Event) {
+		reply := event.RPCReply()
+		if reply == nil {
+			println("Failed to execute RPC")
+		}
+		if event.EventID() == eventId {
+			println("Successfully executed RPC")
+			println(reply.RawReply)
+		}
+	}
 }
