@@ -21,19 +21,20 @@ import "encoding/xml"
 const (
 	// NetconfNotificationXmlns is the XMLNS for the YANG model supporting NETCONF notification
 	NetconfNotificationXmlns         = "urn:ietf:params:xml:ns:netconf:notification:1.0"
+	// NetconfNotificationStreamHandler identifies the callback registration for a `create-subscription`
 	NetconfNotificationStreamHandler = "DEFAULT_NOTIFICATION_STREAM"
 )
 
 // Notification defines a reply to a Notification
 type Notification struct {
-	XMLName        xml.Name `xml:"notification"`
-	XMLNS          string   `xml:"xmlns,attr"`
-	EventTime      string   `xml:"eventTime"`
-	EventData      string   `xml:"eventData,omitempty"`
+	XMLName   xml.Name `xml:"notification"`
+	XMLNS     string   `xml:"xmlns,attr"`
+	EventTime string   `xml:"eventTime"`
+	EventData string   `xml:"eventData,omitempty"`
 	//PushUpdate     string   `xml:"push-update,omitempty"`
-	SubscriptionID string   `xml:"push-update>subscription-id,omitempty"`
-	RawReply       string   `xml:"-"`
-	Data           string   `xml:",innerxml"`
+	SubscriptionID string `xml:"push-update>subscription-id,omitempty"`
+	RawReply       string `xml:"-"`
+	Data           string `xml:",innerxml"`
 }
 
 // NewNotification creates an instance of an Notification based on what was received

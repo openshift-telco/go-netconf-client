@@ -34,6 +34,7 @@ type RPC struct {
 	Data      interface{} `xml:",innerxml"`
 }
 
+// GetMessageID returns the message-id of the RPC
 func (rpc *RPC) GetMessageID() string {
 	return rpc.MessageID
 }
@@ -71,7 +72,7 @@ type RPCReply struct {
 	Ok        bool       `xml:"ok,omitempty"`
 	RawReply  string     `xml:"-"`
 	// this is in the case we are receiving a reply to a NETCONF notification subscription
-	SubscriptionId string `xml:"subscription-id,omitempty"`
+	SubscriptionID string `xml:"subscription-id,omitempty"`
 }
 
 // NewRPCReply creates an instance of an RPCReply based on what was received
