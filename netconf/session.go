@@ -132,10 +132,10 @@ func (session *Session) listen() {
 				}
 				// In case we are using straight create-subscription, there is no way to discern who is the owner
 				// of the received notification, hence we use a default handler.
-				if notification.SubscriptionID == "" {
+				if notification.GetSubscriptionID() == "" {
 					session.Listener.Dispatch(message.NetconfNotificationStreamHandler, 1, notification)
 				} else {
-					session.Listener.Dispatch(notification.SubscriptionID, 1, notification)
+					session.Listener.Dispatch(notification.GetSubscriptionID(), 1, notification)
 				}
 			} else {
 				println(fmt.Errorf(fmt.Sprintf("unknown received message: \n%s", rawXML)))

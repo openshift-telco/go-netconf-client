@@ -31,10 +31,23 @@ type Notification struct {
 	XMLNS     string   `xml:"xmlns,attr"`
 	EventTime string   `xml:"eventTime"`
 	EventData string   `xml:"eventData,omitempty"`
-	//PushUpdate     string   `xml:"push-update,omitempty"`
-	SubscriptionID string `xml:"push-update>subscription-id,omitempty"`
-	RawReply       string `xml:"-"`
-	Data           string `xml:",innerxml"`
+	// The ietf-yang-push model cisco is using isn't following rfc8641, hence accommodating here.
+	// https://github.com/YangModels/yang/blob/master/vendor/cisco/xe/1761/ietf-yang-push.yang#L367
+	SubscriptionIDCisco string `xml:"push-update>subscription-id,omitempty"`
+	SubscriptionID      string `xml:"push-update>id,omitempty"`
+	RawReply            string `xml:"-"`
+	Data                string `xml:",innerxml"`
+}
+
+// GetSubscriptionID returns the subscriptionID
+func (notification *Notification) GetSubscriptionID() string {
+	if notification.SubscriptionID != "" {
+		return notification.SubscriptionID
+	}
+	if notification.SubscriptionIDCisco != "" {
+		return notification.SubscriptionIDCisco
+	}
+	return ""
 }
 
 // NewNotification creates an instance of an Notification based on what was received
