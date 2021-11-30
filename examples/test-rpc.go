@@ -20,19 +20,19 @@ func main() {
 
 func testNotification() {
 
-	notificationSession := createSession(12345)
+	notificationSession := createSession(12346)
 
 	callback := func(event netconf.Event) {
 		reply := event.Notification()
 		println(reply.RawReply)
 	}
-	notificationSession.CreateNotificationStream("", "", "", callback)
+	notificationSession.CreateNotificationStream(1, "", "", "", callback)
 
 	triggerNotification := "    <triggerDataNotification xmlns=\"yang:lighty:test:notifications\">\n        <ClientId>0</ClientId>\n        <Count>5</Count>\n        <Delay>1</Delay>\n        <Payload>just simple notification</Payload>\n    </triggerDataNotification>"
 	rpc := message.NewRPC(triggerNotification)
-	notificationSession.SyncRPC(rpc)
+	notificationSession.SyncRPC(rpc, 1)
 
-	err := notificationSession.CreateNotificationStream("", "", "", callback)
+	err := notificationSession.CreateNotificationStream(1, "", "", "", callback)
 	if err == nil {
 		panic("must fail")
 	}
@@ -102,11 +102,11 @@ func execRPC(session *netconf.Session) {
 
 	// RPCs
 	rpc2 := message.NewRPC(d)
-	session.SyncRPC(rpc2)
+	session.SyncRPC(rpc2, 1)
 	rpc3 := message.NewRPC(d)
-	session.SyncRPC(rpc3)
+	session.SyncRPC(rpc3, 1)
 	rpc4 := message.NewRPC(d)
-	session.SyncRPC(rpc4)
+	session.SyncRPC(rpc4, 1)
 
 	// Close Session
 	d2 := message.NewCloseSession()

@@ -18,6 +18,7 @@ package netconf
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"github.com/adetalhouet/go-netconf/netconf/message"
 	"time"
@@ -27,7 +28,7 @@ import (
 // TODO limitation - for now, we can only register one stream per session, because when a notification is received
 // there is no way to attribute it to a specific stream
 func (session *Session) CreateNotificationStream(
-	stopTime string, startTime string, stream string, callback Callback,
+	timeout int32, stopTime string, startTime string, stream string, callback Callback,
 ) error {
 	if session.IsNotificationStreamCreated {
 		return fmt.Errorf(
@@ -37,7 +38,7 @@ func (session *Session) CreateNotificationStream(
 	}
 	session.Listener.Register(message.NetconfNotificationStreamHandler, callback)
 	sub := message.NewCreateSubscription(stopTime, startTime, stream)
-	rpc, err := session.SyncRPC(sub)
+	rpc, err := session.SyncRPC(sub, timeout)
 	if err != nil || len(rpc.Errors) != 0 {
 		return fmt.Errorf("fail to create notification stream with errors: %s. Error: %s", rpc.Errors, err)
 	}
@@ -67,7 +68,7 @@ func (session *Session) AsyncRPC(operation message.RPCMethod, callback Callback)
 }
 
 // SyncRPC is used to execute an RPC method and receive the response synchronously
-func (session *Session) SyncRPC(operation message.RPCMethod) (*message.RPCReply, error) {
+func (session *Session) SyncRPC(operation message.RPCMethod, timeout int32) (*message.RPCReply, error) {
 
 	// get XML payload
 	request, err := marshall(operation)
@@ -76,13 +77,10 @@ func (session *Session) SyncRPC(operation message.RPCMethod) (*message.RPCReply,
 	}
 
 	// setup and register callback
-	var reply = message.RPCReply{}
-	var replyReceived = false
+	reply := make(chan message.RPCReply, 1)
 	callback := func(event Event) {
-		reply = *event.RPCReply()
-		replyReceived = true
+		reply <- *event.RPCReply()
 		println("Successfully executed RPC")
-		println(reply.RawReply)
 	}
 	session.Listener.Register(operation.GetMessageID(), callback)
 
@@ -93,13 +91,12 @@ func (session *Session) SyncRPC(operation message.RPCMethod) (*message.RPCReply,
 		return nil, err
 	}
 
-	// wait for reply
-	// TODO add support for timeout
-	for !replyReceived {
-		time.Sleep(100 * time.Millisecond)
+	select {
+	case res := <-reply:
+		return &res, nil
+	case <-time.After(time.Duration(timeout) * time.Second):
+		return nil, errors.New("timeout while executing request")
 	}
-
-	return &reply, nil
 }
 
 func marshall(operation interface{}) ([]byte, error) {
