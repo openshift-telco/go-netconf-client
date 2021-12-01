@@ -27,7 +27,7 @@ This library is a simple NETCONF client :
     - No support for notification filtering
 - Partially [RFC8641](https://datatracker.ietf.org/doc/html/rfc8641) and [RFC8639](https://datatracker.ietf.org/doc/html/rfc8639): **Subscription to YANG Notifications for Datastore Updates**
     - Support for `establish-subscription`
-    - No support for `delete-subscription` -- TODO
+    - No support for `delete-subscription`
 
 #### Install
 
