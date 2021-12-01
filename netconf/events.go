@@ -73,6 +73,7 @@ func (d *Dispatcher) WaitForMessages() {
 }
 
 // Dispatch an event by triggering its associated callback.
+// FIXME manage errors
 func (d *Dispatcher) Dispatch(eventID string, eventType EventType, value interface{}) {
 	// Create the event
 	e := &event{
@@ -81,7 +82,11 @@ func (d *Dispatcher) Dispatch(eventID string, eventType EventType, value interfa
 	}
 
 	// Dispatch the event to the callback
-	d.callbacks[eventID](e)
+	callback := d.callbacks[eventID]
+	if callback == nil {
+		return
+	}
+	callback(e)
 
 	// In case of rpc-reply, auto-remove registration
 	// If it is a notification, we need to keep the registration active
@@ -92,7 +97,6 @@ func (d *Dispatcher) Dispatch(eventID string, eventType EventType, value interfa
 	case "notification":
 		// NOOP
 	}
-
 }
 
 // Event represents actions that occur during NETCONF exchange. Listeners can
