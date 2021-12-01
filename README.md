@@ -12,10 +12,10 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 # NETCONF
 
-[![GoDoc](https://godoc.org/github.com/openshift-telco/go-netconf?status.svg)](https://godoc.org/github.com/openshift-telco/go-netconf)
-[![Report Card](https://goreportcard.com/badge/github.com/openshift-telco/go-netconf)](https://goreportcard.com/report/github.com/openshift-telco/go-netconf)
-[![Build Status](https://travis-ci.org/openshift-telco/go-netconf.png)](https://travis-ci.org/openshift-telco/go-netconf)
-[![codecov](https://codecov.io/gh/openshift-telco/go-netconf/branch/main/graph/badge.svg)](https://codecov.io/gh/openshift-telco/go-netconf)
+[![GoDoc](https://godoc.org/github.com/openshift-telco/go-netconf-client?status.svg)](https://godoc.org/github.com/openshift-telco/go-netconf-client)
+[![Report Card](https://goreportcard.com/badge/github.com/openshift-telco/go-netconf-client)](https://goreportcard.com/report/github.com/openshift-telco/go-netconf-client)
+[![Build Status](https://travis-ci.org/openshift-telco/go-netconf-client.png)](https://travis-ci.org/openshift-telco/go-netconf-client)
+[![codecov](https://codecov.io/gh/openshift-telco/go-netconf-client/branch/main/graph/badge.svg)](https://codecov.io/gh/openshift-telco/go-netconf-client)
 
 This library is a simple NETCONF client :
 - [RFC6241](http://tools.ietf.org/html/rfc6241): **Network Configuration Protocol (NETCONF)** 

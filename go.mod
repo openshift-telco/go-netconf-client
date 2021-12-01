@@ -1,4 +1,4 @@
-module github.com/openshift-telco/go-netconf
+module github.com/openshift-telco/go-netconf-client
 
 go 1.16
 
