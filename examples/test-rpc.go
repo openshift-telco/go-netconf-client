@@ -12,10 +12,12 @@ import (
 func main() {
 
 	// java -jar lighty-notifications-device-15.0.1-SNAPSHOT.jar 12345
-	testNotification()
+	//testNotification()
 
 	// java -jar lighty-toaster-multiple-devices-15.0.1-SNAPSHOT.jar --starting-port 20000 --device-count 200 --thread-pool-size 200
-	//testRPC()
+	testRPC()
+
+	time.Sleep(10 * time.Second)
 }
 
 func testNotification() {
@@ -47,7 +49,7 @@ func testNotification() {
 }
 
 func testRPC() {
-	for i := 0; i < 200; i++ {
+	for i := 0; i < 2; i++ {
 		i := i
 		go func() {
 			number := 20000 + i
@@ -101,8 +103,14 @@ func execRPC(session *netconf.Session) {
 	time.Sleep(100 * time.Millisecond)
 
 	// RPCs
+	rpc0 := message.NewGetConfig(message.DatastoreRunning, "", "")
+	reply, _ := session.SyncRPC(rpc0, 1)
+	println(fmt.Printf("blabla %s\n", reply.RawReply))
+
 	rpc2 := message.NewRPC(d)
-	session.SyncRPC(rpc2, 1)
+	syncRPC, _ := session.SyncRPC(rpc2, 1)
+	println(fmt.Printf("blabla %s\n", syncRPC.RawReply))
+
 	rpc3 := message.NewRPC(d)
 	session.SyncRPC(rpc3, 1)
 	rpc4 := message.NewRPC(d)
