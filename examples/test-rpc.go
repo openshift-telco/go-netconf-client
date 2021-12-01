@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/adetalhouet/go-netconf/netconf"
-	"github.com/adetalhouet/go-netconf/netconf/message"
+	"github.com/openshift-telco/go-netconf/netconf"
+	"github.com/openshift-telco/go-netconf/netconf/message"
 	"golang.org/x/crypto/ssh"
 	"log"
 	"time"

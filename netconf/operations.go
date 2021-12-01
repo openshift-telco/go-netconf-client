@@ -20,7 +20,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/adetalhouet/go-netconf/netconf/message"
+	"github.com/openshift-telco/go-netconf/netconf/message"
 	"time"
 )
 

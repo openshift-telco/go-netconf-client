@@ -1,4 +1,4 @@
-module github.com/adetalhouet/go-netconf
+module github.com/openshift-telco/go-netconf
 
 go 1.16
 

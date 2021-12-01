@@ -11,7 +11,7 @@ package netconf
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/adetalhouet/go-netconf/netconf/message"
+	"github.com/openshift-telco/go-netconf/netconf/message"
 	"strings"
 )
 

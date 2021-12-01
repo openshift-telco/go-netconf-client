@@ -12,7 +12,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 # NETCONF
 
-[![GoDoc](https://godoc.org/github.com/openshift-telco/go-netconf/netconf?status.svg)](https://godoc.org/github.com/openshift-telco/go-netconf/netconf)
+[![GoDoc](https://godoc.org/github.com/openshift-telco/go-netconf?status.svg)](https://godoc.org/github.com/openshift-telco/go-netconf)
 [![Report Card](https://goreportcard.com/badge/github.com/openshift-telco/go-netconf)](https://goreportcard.com/report/github.com/openshift-telco/go-netconf)
 [![Build Status](https://travis-ci.org/openshift-telco/go-netconf.png)](https://travis-ci.org/openshift-telco/go-netconf)
 [![codecov](https://codecov.io/gh/openshift-telco/go-netconf/branch/main/graph/badge.svg)](https://codecov.io/gh/openshift-telco/go-netconf)
