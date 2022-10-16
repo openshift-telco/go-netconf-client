@@ -31,7 +31,7 @@ This library is a simple NETCONF client :
 
 #### Install
 
-- `go get github.com/openshift-telco/go-netconf-client`
+- ` go get github.com/openshift-telco/go-netconf-client@v1.0.5`
 
 #### Examples
 
