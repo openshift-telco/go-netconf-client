@@ -72,8 +72,8 @@ func uuid() string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 }
 
-// validateXML checks a provided string can be properly unmarshall in the specified struct
-func validateXML(data string, dataStruct interface{}) {
+// ValidateXML checks a provided string can be properly unmarshall in the specified struct
+func ValidateXML(data string, dataStruct interface{}) {
 	err := xml.Unmarshal([]byte(data), &dataStruct)
 	if err != nil {
 		panic(fmt.Errorf("provided XML is not valid: %s. \n%s", data, err))

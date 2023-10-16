@@ -29,7 +29,7 @@ type Get struct {
 func NewGet(filterType string, data string) *Get {
 	var rpc Get
 	if data != "" {
-		validateXML(data, Filter{})
+		ValidateXML(data, Filter{})
 		validateFilterType(filterType)
 
 		filter := Filter{

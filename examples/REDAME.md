@@ -18,5 +18,9 @@ mvn clean install
 ~~~
 **Run the simulator**
 ~~~
+// RPC tests
 java -jar lighty-netconf-simulator/examples/devices/lighty-toaster-multiple-devices/target/lighty-toaster-multiple-devices-15.0.1-SNAPSHOT.jar --starting-port 20000 --device-count 200 --thread-pool-size 200
+
+// Notification tests
+java -jar lighty-netconf-simulator/examples/devices/lighty-notifications-device/target/lighty-notifications-device-15.0.1-SNAPSHOT.jar 12346
 ~~~

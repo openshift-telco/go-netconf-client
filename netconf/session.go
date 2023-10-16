@@ -11,8 +11,10 @@ package netconf
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/openshift-telco/go-netconf-client/netconf/message"
+	"regexp"
 	"strings"
+
+	"github.com/openshift-telco/go-netconf-client/netconf/message"
 )
 
 // DefaultCapabilities sets the default capabilities of the client library
@@ -107,8 +109,13 @@ func (session *Session) listen() {
 				continue
 			}
 			var rawReply = string(rawXML)
-			if strings.Contains(rawReply, "<rpc-reply") {
+			isRpcReply, err := regexp.MatchString(message.RpcReplyRegex, rawReply)
+			if err != nil {
+				println(fmt.Errorf("failed to match string: %s. %s", rawReply, err))
+				continue
+			}
 
+			if isRpcReply {
 				rpcReply, err := message.NewRPCReply(rawXML)
 				if err != nil {
 					println(fmt.Errorf("failed to marshall message into an RPCReply. %s", err))
@@ -116,21 +123,28 @@ func (session *Session) listen() {
 				}
 				session.Listener.Dispatch(rpcReply.MessageID, 0, rpcReply)
 
-			} else if strings.Contains(rawReply, "<notification") {
-				notification, err := message.NewNotification(rawXML)
+			} else {
+				isNotification, err := regexp.MatchString(message.NotificationMessageRegex, rawReply)
 				if err != nil {
-					println(fmt.Printf("failed to marshall message into an Notification. %s\n", err))
+					println(fmt.Errorf("failed to match string: %s. %s", rawReply, err))
 					continue
 				}
-				// In case we are using straight create-subscription, there is no way to discern who is the owner
-				// of the received notification, hence we use a default handler.
-				if notification.GetSubscriptionID() == "" {
-					session.Listener.Dispatch(message.NetconfNotificationStreamHandler, 1, notification)
+				if isNotification {
+					notification, err := message.NewNotification(rawXML)
+					if err != nil {
+						println(fmt.Printf("failed to marshall message into an Notification. %s\n", err))
+						continue
+					}
+					// In case we are using straight create-subscription, there is no way to discern who is the owner
+					// of the received notification, hence we use a default handler.
+					if notification.GetSubscriptionID() == "" {
+						session.Listener.Dispatch(message.NetconfNotificationStreamHandler, 1, notification)
+					} else {
+						session.Listener.Dispatch(notification.GetSubscriptionID(), 1, notification)
+					}
 				} else {
-					session.Listener.Dispatch(notification.GetSubscriptionID(), 1, notification)
+					println(fmt.Errorf(fmt.Sprintf("unknown received message: \n%s", rawXML)))
 				}
-			} else {
-				println(fmt.Errorf(fmt.Sprintf("unknown received message: \n%s", rawXML)))
 			}
 		}
 		println("exit receiving loop")

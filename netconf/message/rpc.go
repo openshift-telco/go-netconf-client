@@ -21,6 +21,8 @@ import (
 	"fmt"
 )
 
+const RpcReplyRegex = ".*rpc-reply"
+
 // RPCMethod defines the interface for creating an RPC method.
 // This is mostly a marker interface to abstract all RPCs
 type RPCMethod interface {
@@ -65,7 +67,7 @@ func (re *RPCError) Error() string {
 
 // RPCReply defines a reply to a RPC request
 type RPCReply struct {
-	XMLName   xml.Name   `xml:"rpc-reply"`
+	XMLName   xml.Name   `xml:"rpc-reply"` //urn:ietf:params:xml:ns:netconf:base:1.0
 	MessageID string     `xml:"message-id,attr"`
 	Errors    []RPCError `xml:"rpc-error,omitempty"`
 	Data      string     `xml:",innerxml"`

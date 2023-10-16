@@ -14,12 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package message
+package tests
 
 import (
 	"encoding/xml"
 	"regexp"
 	"testing"
+
+	"github.com/openshift-telco/go-netconf-client/netconf/message"
 )
 
 const (
@@ -51,7 +53,7 @@ func TestInvalidXML(t *testing.T) {
 	invalidXML := "<<top xmlns=\"http://example.com/schema/1.2/config\"><users/></top>"
 	didPanic := panics(
 		func() {
-			validateXML(invalidXML, Filter{})
+			message.ValidateXML(invalidXML, message.Filter{})
 		},
 	)
 
@@ -65,7 +67,7 @@ func TestValidXML(t *testing.T) {
 	invalidXML := "<top xmlns=\"http://example.com/schema/1.2/config\"><users/></top>"
 	didPanic := panics(
 		func() {
-			validateXML(invalidXML, Filter{})
+			message.ValidateXML(invalidXML, message.Filter{})
 		},
 	)
 
@@ -78,7 +80,7 @@ func TestValidXML(t *testing.T) {
 func TestGetWithoutFilter(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><get></get></rpc>"
 
-	rpc := NewGet(FilterTypeSubtree, "")
+	rpc := message.NewGet(message.FilterTypeSubtree, "")
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -92,7 +94,7 @@ func TestGetWithoutFilter(t *testing.T) {
 func TestGetWithFilter(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><filter type=\"subtree\"><top xmlns=\"http://example.com/schema/1.2/config\"><users/></top></filter></rpc>"
 
-	rpc := NewGet(FilterTypeSubtree, data)
+	rpc := message.NewGet(message.FilterTypeSubtree, data)
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -106,7 +108,7 @@ func TestGetWithFilter(t *testing.T) {
 func TestGetWithInvalidFilter(t *testing.T) {
 	didPanic := panics(
 		func() {
-			_ = NewGet("dummyFilter", data)
+			_ = message.NewGet("dummyFilter", data)
 		},
 	)
 
@@ -119,7 +121,7 @@ func TestGetWithInvalidFilter(t *testing.T) {
 func TestGetConfigWithNoFilter(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><get-config><source><running></running></source></get-config></rpc>"
 
-	rpc := NewGetConfig(DatastoreRunning, FilterTypeSubtree, "")
+	rpc := message.NewGetConfig(message.DatastoreRunning, message.FilterTypeSubtree, "")
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -133,7 +135,7 @@ func TestGetConfigWithNoFilter(t *testing.T) {
 func TestGetConfigWithFilter(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><get-config><source><running></running></source><filter type=\"subtree\"><top xmlns=\"http://example.com/schema/1.2/config\"><users/></top></filter></get-config></rpc>"
 
-	rpc := NewGetConfig(DatastoreRunning, FilterTypeSubtree, data)
+	rpc := message.NewGetConfig(message.DatastoreRunning, message.FilterTypeSubtree, data)
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -147,7 +149,7 @@ func TestGetConfigWithFilter(t *testing.T) {
 func TestEditConfig(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><edit-config><target><running></running></target><default-operation>merge</default-operation><config><top xmlns=\"http://example.com/schema/1.2/config\"><users/></top></config></edit-config></rpc>"
 
-	rpc := NewEditConfig(DatastoreRunning, DefaultOperationTypeMerge, data)
+	rpc := message.NewEditConfig(message.DatastoreRunning, message.DefaultOperationTypeMerge, data)
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -161,7 +163,7 @@ func TestEditConfig(t *testing.T) {
 func TestEditConfigInvalidOperation(t *testing.T) {
 	didPanic := panics(
 		func() {
-			_ = NewEditConfig(DatastoreRunning, "dummyOps", data)
+			_ = message.NewEditConfig(message.DatastoreRunning, "dummyOps", data)
 		},
 	)
 
@@ -174,7 +176,7 @@ func TestEditConfigInvalidOperation(t *testing.T) {
 func TestEditConfigInvalidDatastore(t *testing.T) {
 	didPanic := panics(
 		func() {
-			_ = NewEditConfig("dummyDS", DefaultOperationTypeMerge, data)
+			_ = message.NewEditConfig("dummyDS", message.DefaultOperationTypeMerge, data)
 		},
 	)
 
@@ -187,7 +189,7 @@ func TestEditConfigInvalidDatastore(t *testing.T) {
 func TestLock(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><lock><target><running></running></target></lock></rpc>"
 
-	rpc := NewLock(DatastoreRunning)
+	rpc := message.NewLock(message.DatastoreRunning)
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -201,7 +203,7 @@ func TestLock(t *testing.T) {
 func TestUnlock(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><unlock><target><running></running></target></unlock></rpc>"
 
-	rpc := NewUnlock(DatastoreRunning)
+	rpc := message.NewUnlock(message.DatastoreRunning)
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -215,7 +217,7 @@ func TestUnlock(t *testing.T) {
 func TestNewValidate(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><validate><source><running></running></source></validate></rpc>"
 
-	rpc := NewValidate(DatastoreRunning)
+	rpc := message.NewValidate(message.DatastoreRunning)
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -229,7 +231,7 @@ func TestNewValidate(t *testing.T) {
 func TestNewCloseSession(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><close-session></close-session></rpc>"
 
-	rpc := NewCloseSession()
+	rpc := message.NewCloseSession()
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -242,7 +244,7 @@ func TestNewCloseSession(t *testing.T) {
 
 func TestNewKillSession(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><kill-session><session-id>4</session-id></kill-session></rpc>"
-	rpc := NewKillSession("4")
+	rpc := message.NewKillSession("4")
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -256,7 +258,7 @@ func TestNewKillSession(t *testing.T) {
 func TestNewCreateSubscription(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><create-subscription xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\"><stream>netconf-stream</stream></create-subscription></rpc>"
 
-	rpc := NewCreateSubscription("", "", "netconf-stream")
+	rpc := message.NewCreateSubscription("", "", "netconf-stream")
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -270,7 +272,7 @@ func TestNewCreateSubscription(t *testing.T) {
 func TestNewEstablishSubscription(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><establish-subscription xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\" xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\"><stream>yp:yang-push</stream><yp:xpath-filter>/mdt-oper:mdt-oper-data/mdt-subscriptions</yp:xpath-filter><yp:period>1000</yp:period></establish-subscription></rpc>"
 
-	rpc := NewEstablishSubscription("<establish-subscription xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\" xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\"><stream>yp:yang-push</stream><yp:xpath-filter>/mdt-oper:mdt-oper-data/mdt-subscriptions</yp:xpath-filter><yp:period>1000</yp:period></establish-subscription>")
+	rpc := message.NewEstablishSubscription("<establish-subscription xmlns=\"urn:ietf:params:xml:ns:yang:ietf-event-notifications\" xmlns:yp=\"urn:ietf:params:xml:ns:yang:ietf-yang-push\"><stream>yp:yang-push</stream><yp:xpath-filter>/mdt-oper:mdt-oper-data/mdt-subscriptions</yp:xpath-filter><yp:period>1000</yp:period></establish-subscription>")
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -284,7 +286,7 @@ func TestNewEstablishSubscription(t *testing.T) {
 func TestNewCommit(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><commit></commit></rpc>"
 
-	rpc := NewCommit()
+	rpc := message.NewCommit()
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -299,7 +301,7 @@ func TestNewRPC(t *testing.T) {
 	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><commit></commit></rpc>"
 	data := "<commit></commit>"
 
-	rpc := NewRPC(data)
+	rpc := message.NewRPC(data)
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())

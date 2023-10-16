@@ -2,20 +2,21 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/openshift-telco/go-netconf-client/netconf"
 	"github.com/openshift-telco/go-netconf-client/netconf/message"
 	"golang.org/x/crypto/ssh"
-	"log"
-	"time"
 )
 
 func main() {
 
 	// java -jar lighty-notifications-device-15.0.1-SNAPSHOT.jar 12345
-	//testNotification()
+	testNotification()
 
 	// java -jar lighty-toaster-multiple-devices-15.0.1-SNAPSHOT.jar --starting-port 20000 --device-count 200 --thread-pool-size 200
-	testRPC()
+	//testRPC()
 
 	time.Sleep(10 * time.Second)
 }
@@ -28,13 +29,16 @@ func testNotification() {
 		reply := event.Notification()
 		println(reply.RawReply)
 	}
-	notificationSession.CreateNotificationStream(1, "", "", "", callback)
+	err := notificationSession.CreateNotificationStream(1, "", "", "", callback)
+	if err != nil {
+		panic("fail")
+	}
 
 	triggerNotification := "    <triggerDataNotification xmlns=\"yang:lighty:test:notifications\">\n        <ClientId>0</ClientId>\n        <Count>5</Count>\n        <Delay>1</Delay>\n        <Payload>just simple notification</Payload>\n    </triggerDataNotification>"
 	rpc := message.NewRPC(triggerNotification)
 	notificationSession.SyncRPC(rpc, 1)
 
-	err := notificationSession.CreateNotificationStream(1, "", "", "", callback)
+	err = notificationSession.CreateNotificationStream(1, "", "", "", callback)
 	if err == nil {
 		panic("must fail")
 	}

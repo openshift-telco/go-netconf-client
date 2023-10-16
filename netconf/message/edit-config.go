@@ -42,7 +42,7 @@ type config struct {
 
 // NewEditConfig can be used to create a `edit-config` message.
 func NewEditConfig(datastoreType string, operationType string, data string) *EditConfig {
-	validateXML(data, config{})
+	ValidateXML(data, config{})
 	validDefaultOperation(operationType)
 
 	var rpc EditConfig

@@ -28,7 +28,7 @@ type GetConfig struct {
 func NewGetConfig(datastoreType string, filterType string, filterData string) *GetConfig {
 	var rpc GetConfig
 	if filterData != "" {
-		validateXML(filterData, Filter{})
+		ValidateXML(filterData, Filter{})
 		validateFilterType(filterType)
 
 		filter := Filter{

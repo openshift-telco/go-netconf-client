@@ -23,6 +23,7 @@ const (
 	NetconfNotificationXmlns = "urn:ietf:params:xml:ns:netconf:notification:1.0"
 	// NetconfNotificationStreamHandler identifies the callback registration for a `create-subscription`
 	NetconfNotificationStreamHandler = "DEFAULT_NOTIFICATION_STREAM"
+	NotificationMessageRegex         = ".*notification"
 )
 
 // Notification defines a reply to a Notification
