@@ -26,6 +26,8 @@ import (
 const (
 	// FilterTypeSubtree represent the filter for get operation
 	FilterTypeSubtree string = "subtree"
+	// DatastoreStartup represents the startup datastore
+	DatastoreStartup string = "startup"
 	// DatastoreRunning represents the running datastore
 	DatastoreRunning string = "running"
 	// DatastoreCandidate represents the candidate datastore
@@ -49,12 +51,15 @@ type Filter struct {
 type Datastore struct {
 	Candidate interface{} `xml:"candidate,omitempty"`
 	Running   interface{} `xml:"running,omitempty"`
+	Startup   interface{} `xml:"startup,omitempty"`
 }
 
 // datastore returns a Datastore object populated with appropriate datastoreType
 func datastore(datastoreType string) *Datastore {
 	validateDatastore(datastoreType)
 	switch datastoreType {
+	case DatastoreStartup:
+		return &Datastore{Startup: ""}
 	case DatastoreRunning:
 		return &Datastore{Running: ""}
 	case DatastoreCandidate:
@@ -83,6 +88,8 @@ func ValidateXML(data string, dataStruct interface{}) {
 // validateDatastore checks the provided string is a supported Datastore
 func validateDatastore(datastore string) {
 	switch datastore {
+	case DatastoreStartup:
+		return
 	case DatastoreRunning:
 		return
 	case DatastoreCandidate:
