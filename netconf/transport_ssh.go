@@ -138,6 +138,21 @@ func DialSSHTimeout(target string, config *ssh.ClientConfig, timeout time.Durati
 	return NewSession(t), nil
 }
 
+// NoDialSSH - create a new NETCONF session over the given ssh Client.
+func NoDialSSH(sshClient *ssh.Client) (*Session, error) {
+	var t TransportSSH
+	t.sshClient = sshClient
+	err := t.setupSession()
+	if err != nil {
+		err := t.Close()
+		if err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	return NewSession(&t), nil
+}
+
 // SSHConfigPubKeyFile is a convenience function that takes a username, private key
 // and passphrase and returns a new ssh.ClientConfig setup to pass credentials
 // to DialSSH
