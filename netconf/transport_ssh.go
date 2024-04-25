@@ -88,9 +88,9 @@ func (t *TransportSSH) Dial(target string, config *ssh.ClientConfig) error {
 	return err
 }
 
-// DialSSH creates a new NETCONF session using an SSH Transport.
+// DialSSH creates a new SSH Transport.
 // See TransportSSH.Dial for arguments.
-func DialSSH(target string, config *ssh.ClientConfig) (*Session, error) {
+func DialSSH(target string, config *ssh.ClientConfig) (*TransportSSH, error) {
 	var t TransportSSH
 	err := t.Dial(target, config)
 	if err != nil {
@@ -100,13 +100,13 @@ func DialSSH(target string, config *ssh.ClientConfig) (*Session, error) {
 		}
 		return nil, err
 	}
-	return NewSession(&t), nil
+	return &t, nil
 }
 
-// DialSSHTimeout creates a new NETCONF session using an SSH Transport with timeout.
+// DialSSHTimeout creates a new SSH Transport with timeout.
 // See TransportSSH.Dial for arguments.
 // The timeout value is used for both connection establishment and Read/Write operations.
-func DialSSHTimeout(target string, config *ssh.ClientConfig, timeout time.Duration) (*Session, error) {
+func DialSSHTimeout(target string, config *ssh.ClientConfig, timeout time.Duration) (*TransportSSH, error) {
 	bareConn, err := net.DialTimeout("tcp", target, timeout)
 	if err != nil {
 		return nil, err
@@ -135,11 +135,11 @@ func DialSSHTimeout(target string, config *ssh.ClientConfig, timeout time.Durati
 		}
 	}()
 
-	return NewSession(t), nil
+	return t, nil
 }
 
-// NoDialSSH - create a new NETCONF session over the given ssh Client.
-func NoDialSSH(sshClient *ssh.Client) (*Session, error) {
+// NoDialSSH - create a new TransportSSH from given ssh Client.
+func NoDialSSH(sshClient *ssh.Client) (*TransportSSH, error) {
 	var t TransportSSH
 	t.sshClient = sshClient
 	err := t.setupSession()
@@ -150,7 +150,7 @@ func NoDialSSH(sshClient *ssh.Client) (*Session, error) {
 		}
 		return nil, err
 	}
-	return NewSession(&t), nil
+	return &t, nil
 }
 
 // SSHConfigPubKeyFile is a convenience function that takes a username, private key
