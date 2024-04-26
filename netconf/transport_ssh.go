@@ -91,7 +91,7 @@ func (t *TransportSSH) Dial(target string, config *ssh.ClientConfig) error {
 // DialSSH creates a new SSH Transport.
 // See TransportSSH.Dial for arguments.
 func DialSSH(target string, config *ssh.ClientConfig) (*TransportSSH, error) {
-	var t TransportSSH
+	t := new(TransportSSH)
 	err := t.Dial(target, config)
 	if err != nil {
 		err := t.Close()
@@ -100,7 +100,7 @@ func DialSSH(target string, config *ssh.ClientConfig) (*TransportSSH, error) {
 		}
 		return nil, err
 	}
-	return &t, nil
+	return t, nil
 }
 
 // DialSSHTimeout creates a new SSH Transport with timeout.
@@ -140,7 +140,7 @@ func DialSSHTimeout(target string, config *ssh.ClientConfig, timeout time.Durati
 
 // NoDialSSH - create a new TransportSSH from given ssh Client.
 func NoDialSSH(sshClient *ssh.Client) (*TransportSSH, error) {
-	var t TransportSSH
+	t := new(TransportSSH)
 	t.sshClient = sshClient
 	err := t.setupSession()
 	if err != nil {
@@ -150,7 +150,7 @@ func NoDialSSH(sshClient *ssh.Client) (*TransportSSH, error) {
 		}
 		return nil, err
 	}
-	return &t, nil
+	return t, nil
 }
 
 // SSHConfigPubKeyFile is a convenience function that takes a username, private key
