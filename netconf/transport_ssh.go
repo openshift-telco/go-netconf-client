@@ -12,7 +12,9 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log/slog"
 	"net"
 	"strings"
 	"time"
@@ -28,12 +30,23 @@ const (
 	sshNetconfSubsystem = "netconf"
 )
 
+// TransportSSHOption allow optional configuration for the TransportSSH.
+type TransportSSHOption func(*TransportSSH)
+
 // TransportSSH maintains the information necessary to communicate with the
 // remote device over SSH
 type TransportSSH struct {
 	transportBasicIO
 	sshClient  *ssh.Client
 	sshSession *ssh.Session
+	logger     Logger
+}
+
+// WithTransportSSHLogger set the TransportSSH logger provided in the TransportSSH option.
+func WithTransportSSHLogger(logger Logger) TransportSSHOption {
+	return func(t *TransportSSH) {
+		t.logger = logger
+	}
 }
 
 // Close closes an existing SSH session and socket if they exist.
@@ -91,7 +104,8 @@ func (t *TransportSSH) Dial(target string, config *ssh.ClientConfig) error {
 // DialSSH creates a new NETCONF session using an SSH Transport.
 // See TransportSSH.Dial for arguments.
 func DialSSH(target string, config *ssh.ClientConfig) (*Session, error) {
-	var t TransportSSH
+	t := new(TransportSSH)
+
 	err := t.Dial(target, config)
 	if err != nil {
 		err := t.Close()
@@ -100,7 +114,7 @@ func DialSSH(target string, config *ssh.ClientConfig) (*Session, error) {
 		}
 		return nil, err
 	}
-	return NewSession(&t), nil
+	return NewSession(t), nil
 }
 
 // DialSSHTimeout creates a new NETCONF session using an SSH Transport with timeout.
@@ -139,8 +153,16 @@ func DialSSHTimeout(target string, config *ssh.ClientConfig, timeout time.Durati
 }
 
 // NoDialSSH - create a new NETCONF session over the given ssh Client.
-func NoDialSSH(sshClient *ssh.Client) (*Session, error) {
-	var t TransportSSH
+func NoDialSSH(sshClient *ssh.Client, options ...TransportSSHOption) (*Session, error) {
+	t := new(TransportSSH)
+	for _, opt := range options {
+		opt(t)
+	}
+
+	if t.logger == nil {
+		t.logger = slog.New(slog.NewJSONHandler(io.Discard, nil))
+	}
+
 	t.sshClient = sshClient
 	err := t.setupSession()
 	if err != nil {
@@ -150,7 +172,7 @@ func NoDialSSH(sshClient *ssh.Client) (*Session, error) {
 		}
 		return nil, err
 	}
-	return NewSession(&t), nil
+	return NewSession(t, WithSessionLogger(t.logger)), nil
 }
 
 // SSHConfigPubKeyFile is a convenience function that takes a username, private key
