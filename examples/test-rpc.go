@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"log/slog"
+	"os"
 	"time"
 
 	"github.com/openshift-telco/go-netconf-client/netconf"
@@ -133,10 +135,13 @@ func createSession(port int) *netconf.Session {
 		Auth:            []ssh.AuthMethod{ssh.Password("admin")},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	s, err := netconf.DialSSH(fmt.Sprintf("127.0.0.1:%d", port), sshConfig)
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	s, err := netconf.NewSessionFromSSHConfig(fmt.Sprintf("127.0.0.1:%d", port), sshConfig, netconf.WithSessionLogger(logger))
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	capabilities := netconf.DefaultCapabilities
 	err = s.SendHello(&message.Hello{Capabilities: capabilities})
 	if err != nil {

@@ -11,15 +11,15 @@ package netconf
 import (
 	"context"
 	"encoding/xml"
+	"io"
 	"log/slog"
-	"os"
 	"regexp"
 	"strings"
 
 	"github.com/openshift-telco/go-netconf-client/netconf/message"
 )
 
-// DefaultCapabilities sets the default capabilities of the client library
+// DefaultCapabilities sets the default capabilities of the client library.
 var DefaultCapabilities = []string{
 	message.NetconfVersion10,
 	message.NetconfVersion11,
@@ -37,7 +37,7 @@ type Logger interface {
 // SessionOption allow optional configuration for the session.
 type SessionOption func(*Session)
 
-// Session represents a NETCONF sessions with a remote NETCONF server
+// Session represents a NETCONF sessions with a remote NETCONF server.
 type Session struct {
 	Transport                   Transport
 	SessionID                   int
@@ -56,8 +56,7 @@ func NewSession(t Transport, options ...SessionOption) *Session {
 	}
 
 	if s.logger == nil {
-		// Ideally the default should be to discard any outputs, but to keep existing client logs available default logs to standard output.
-		s.logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+		s.logger = slog.New(slog.NewJSONHandler(io.Discard, nil))
 	}
 
 	s.Transport = t
@@ -130,7 +129,7 @@ func (session *Session) Close() error {
 	return session.Transport.Close()
 }
 
-// Listen starts a goroutine that listen to incoming messages and dispatch them as then are processed.
+// Listen starts a goroutine that listen to incoming messages and dispatch them as they are processed.
 func (session *Session) listen() {
 	go func() {
 		for ok := true; ok; ok = !session.IsClosed {
