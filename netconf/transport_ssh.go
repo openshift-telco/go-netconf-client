@@ -12,8 +12,8 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"net"
+	"os"
 	"strings"
 	"time"
 
@@ -157,7 +157,7 @@ func NoDialSSH(sshClient *ssh.Client) (*TransportSSH, error) {
 // and passphrase and returns a new ssh.ClientConfig setup to pass credentials
 // to DialSSH
 func SSHConfigPubKeyFile(user string, file string, passphrase string) (*ssh.ClientConfig, error) {
-	buf, err := ioutil.ReadFile(file)
+	buf, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
