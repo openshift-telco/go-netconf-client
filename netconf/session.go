@@ -11,6 +11,8 @@ package netconf
 import (
 	"context"
 	"encoding/xml"
+	"io"
+	"log/slog"
 	"regexp"
 	"strings"
 
@@ -53,6 +55,10 @@ func NewSession(t Transport, options ...SessionOption) *Session {
 		opt(s)
 	}
 
+	if s.logger == nil {
+		s.logger = slog.New(slog.NewJSONHandler(io.Discard, nil))
+	}
+
 	s.Transport = t
 
 	// Receive server Hello message
@@ -66,8 +72,8 @@ func NewSession(t Transport, options ...SessionOption) *Session {
 	return s
 }
 
-// WithLogger set the session logger provided in the session option.
-func WithLogger(logger Logger) SessionOption {
+// WithSessionLogger set the session logger provided in the session option.
+func WithSessionLogger(logger Logger) SessionOption {
 	return func(s *Session) {
 		s.logger = logger
 	}

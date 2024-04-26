@@ -135,13 +135,12 @@ func createSession(port int) *netconf.Session {
 		Auth:            []ssh.AuthMethod{ssh.Password("admin")},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	t, err := netconf.DialSSH(fmt.Sprintf("127.0.0.1:%d", port), sshConfig)
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	s, err := netconf.NewSessionFromSSHConfig(fmt.Sprintf("127.0.0.1:%d", port), sshConfig, netconf.WithSessionLogger(logger))
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	s := netconf.NewSession(t, netconf.WithLogger(logger))
 
 	capabilities := netconf.DefaultCapabilities
 	err = s.SendHello(&message.Hello{Capabilities: capabilities})
