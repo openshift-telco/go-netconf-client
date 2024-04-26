@@ -20,8 +20,9 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/openshift-telco/go-netconf-client/netconf/message"
 	"time"
+
+	"github.com/openshift-telco/go-netconf-client/netconf/message"
 )
 
 // CreateNotificationStream is a convenient method to create a notification stream registration.
@@ -40,7 +41,7 @@ func (session *Session) CreateNotificationStream(
 	sub := message.NewCreateSubscription(stopTime, startTime, stream)
 	rpc, err := session.SyncRPC(sub, timeout)
 	if err != nil || len(rpc.Errors) != 0 {
-		return fmt.Errorf("fail to create notification stream with errors: %s. Error: %s", rpc.Errors, err)
+		return fmt.Errorf("fail to create notification stream with errors: %s. Error: %w", rpc.Errors, err)
 	}
 	session.IsNotificationStreamCreated = true
 	return nil
@@ -58,7 +59,7 @@ func (session *Session) AsyncRPC(operation message.RPCMethod, callback Callback)
 	// register the listener for the message
 	session.Listener.Register(operation.GetMessageID(), callback)
 
-	fmt.Println(fmt.Sprintf("\nSending RPC"))
+	session.logger.Info("Sending RPC")
 	err = session.Transport.Send(request)
 	if err != nil {
 		return err
@@ -80,12 +81,12 @@ func (session *Session) SyncRPC(operation message.RPCMethod, timeout int32) (*me
 	reply := make(chan message.RPCReply, 1)
 	callback := func(event Event) {
 		reply <- *event.RPCReply()
-		println("Successfully executed RPC")
+		session.logger.Info("Successfully executed RPC")
 	}
 	session.Listener.Register(operation.GetMessageID(), callback)
 
 	// send rpc
-	fmt.Println(fmt.Sprintf("\n\nSending RPC"))
+	session.logger.Info("Sending RPC")
 	err = session.Transport.Send(request)
 	if err != nil {
 		return nil, err
