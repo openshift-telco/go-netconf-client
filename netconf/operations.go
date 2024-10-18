@@ -40,7 +40,9 @@ func (session *Session) CreateNotificationStream(
 	session.Listener.Register(message.NetconfNotificationStreamHandler, callback)
 	sub := message.NewCreateSubscription(stopTime, startTime, stream)
 	rpc, err := session.SyncRPC(sub, timeout)
-	if err != nil || len(rpc.Errors) != 0 {
+	if rpc == nil {
+		return fmt.Errorf("fail to create notification stream with errors. Error: %w", err)
+	} else if err != nil || len(rpc.Errors) != 0 {
 		return fmt.Errorf("fail to create notification stream with errors: %s. Error: %w", rpc.Errors, err)
 	}
 	session.IsNotificationStreamCreated = true
