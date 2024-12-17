@@ -15,7 +15,10 @@ func NewSessionFromSSHConfig(target string, config *ssh.ClientConfig, options ..
 		return nil, fmt.Errorf("DialSSHTimeout: %w", err)
 	}
 
-	s := NewSession(t, options...)
+	s, err := NewSession(t, options...)
+	if err != nil {
+		return nil, err
+	}
 
 	return s, nil
 }
@@ -27,7 +30,10 @@ func NewSessionFromSSHConfigTimeout(ctx context.Context, target string, config *
 		return nil, fmt.Errorf("DialSSHTimeout: %w", err)
 	}
 
-	s := NewSession(t, options...)
+	s, err := NewSession(t, options...)
+	if err != nil {
+		return nil, err
+	}
 
 	return s, nil
 }
@@ -39,7 +45,10 @@ func NewSessionFromSSHClient(ctx context.Context, client *ssh.Client, options ..
 		return nil, fmt.Errorf("NoDialSSH: %w", err)
 	}
 
-	s := NewSession(t, options...)
+	s, err := NewSession(t, options...)
+	if err != nil {
+		return nil, err
+	}
 
 	return s, nil
 }

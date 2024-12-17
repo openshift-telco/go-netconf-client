@@ -49,7 +49,7 @@ type Session struct {
 }
 
 // NewSession creates a new NETCONF session using the provided transport layer.
-func NewSession(t Transport, options ...SessionOption) *Session {
+func NewSession(t Transport, options ...SessionOption) (*Session, error) {
 	s := new(Session)
 	for _, opt := range options {
 		opt(s)
@@ -62,14 +62,17 @@ func NewSession(t Transport, options ...SessionOption) *Session {
 	s.Transport = t
 
 	// Receive server Hello message
-	serverHello, _ := s.ReceiveHello()
+	serverHello, err := s.ReceiveHello()
+	if err != nil {
+		return nil, err
+	}
 	s.SessionID = serverHello.SessionID
 	s.Capabilities = serverHello.Capabilities
 
 	s.Listener = &Dispatcher{}
 	s.Listener.init()
 
-	return s
+	return s, nil
 }
 
 // WithSessionLogger set the session logger provided in the session option.
