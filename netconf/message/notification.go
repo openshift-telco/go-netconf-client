@@ -72,18 +72,23 @@ type CreateSubscription struct {
 
 // CreateSubscriptionData is the struct to create a `create-subscription` message
 type CreateSubscriptionData struct {
-	XMLNS     string `xml:"xmlns,attr"`
-	Stream    string `xml:"stream,omitempty"` // default is NETCONF
-	Filter    string `xml:"filter,omitempty"`
-	StartTime string `xml:"startTime,omitempty"`
-	StopTime  string `xml:"stopTime,omitempty"`
+	XMLNS     string        `xml:"xmlns,attr"`
+	Stream    string        `xml:"stream,omitempty"` // default is NETCONF
+	Filter    *filterStruct `xml:"filter,omitempty"`
+	StartTime string        `xml:"startTime,omitempty"`
+	StopTime  string        `xml:"stopTime,omitempty"`
+}
+
+type filterStruct struct {
+	Type  string `xml:"type,attr"`
+	Value string `xml:",chardata"`
 }
 
 // NewCreateSubscriptionDefault can be used to create a `create-subscription` message for the NETCONF stream.
 func NewCreateSubscriptionDefault() *CreateSubscription {
 	var rpc CreateSubscription
 	var sub = &CreateSubscriptionData{
-		NetconfNotificationXmlns, "", "", "", "",
+		NetconfNotificationXmlns, "", nil, "", "",
 	}
 	rpc.Subscription = *sub
 	rpc.MessageID = uuid()
@@ -94,7 +99,7 @@ func NewCreateSubscriptionDefault() *CreateSubscription {
 func NewCreateSubscription(stopTime string, startTime string, stream string) *CreateSubscription {
 	var rpc CreateSubscription
 	var sub = &CreateSubscriptionData{
-		NetconfNotificationXmlns, stream, "", startTime, stopTime,
+		NetconfNotificationXmlns, stream, nil, startTime, stopTime,
 	}
 	rpc.Subscription = *sub
 	rpc.MessageID = uuid()
@@ -105,7 +110,7 @@ func NewCreateSubscription(stopTime string, startTime string, stream string) *Cr
 func NewCreateSubscriptionFiltered(stopTime string, startTime string, stream string, filter string) *CreateSubscription {
 	var rpc CreateSubscription
 	var sub = &CreateSubscriptionData{
-		NetconfNotificationXmlns, stream, filter, startTime, stopTime,
+		NetconfNotificationXmlns, stream, &filterStruct{"subtree", filter}, startTime, stopTime,
 	}
 	rpc.Subscription = *sub
 	rpc.MessageID = uuid()
