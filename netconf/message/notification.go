@@ -80,11 +80,12 @@ type CreateSubscriptionData struct {
 }
 
 type FilterStruct struct {
-	Type       string `xml:"type,attr"`
-	ANamespace string `xml:"xmlns:a,attr,omitempty"`
-	BNamespace string `xml:"xmlns:b,attr,omitempty"`
-	CNamespace string `xml:"xmlns:c,attr,omitempty"`
-	Select     string `xml:"select,attr"`
+	Type               string       `xml:"type,attr,omitempty"`
+	Alarm_Notification *FilterParam `xml:"alarm-notification,omitempty"`
+	Interfaces_State   *FilterParam `xml:"interfaces-state,omitempty"`
+}
+type FilterParam struct {
+	XMLNS string `xml:"xmlns,attr"`
 }
 
 /*
