@@ -52,7 +52,7 @@ func (session *Session) CreateNotificationStream(
 }
 
 func (session *Session) CreateNotificationStreamFiltered(
-	timeout int32, stopTime string, startTime string, filter string, stream string, callback Callback,
+	timeout int32, stopTime string, startTime string, filter *message.FilterStruct, stream string, callback Callback,
 ) error {
 	if session.IsNotificationStreamCreated {
 		return fmt.Errorf(

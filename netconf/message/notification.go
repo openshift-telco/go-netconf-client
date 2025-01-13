@@ -74,15 +74,31 @@ type CreateSubscription struct {
 type CreateSubscriptionData struct {
 	XMLNS     string        `xml:"xmlns,attr"`
 	Stream    string        `xml:"stream,omitempty"` // default is NETCONF
-	Filter    *filterStruct `xml:"filter,omitempty"`
+	Filter    *FilterStruct `xml:"filter,omitempty"`
 	StartTime string        `xml:"startTime,omitempty"`
 	StopTime  string        `xml:"stopTime,omitempty"`
 }
 
-type filterStruct struct {
-	Type  string `xml:"type,attr"`
-	Value string `xml:",chardata"`
+type FilterStruct struct {
+	Type       string `xml:"type,attr"`
+	ANamespace string `xml:"xmlns:a,attr,omitempty"`
+	BNamespace string `xml:"xmlns:b,attr,omitempty"`
+	CNamespace string `xml:"xmlns:c,attr,omitempty"`
+	Select     string `xml:"select,attr"`
 }
+
+/*
+func (f filterStruct) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	start.Name.Local = "filter"
+	start.Attr = []xml.Attr{
+		{Name: xml.Name{Local: "type"}, Value: f.Type},
+	}
+	e.EncodeToken(start)
+	e.EncodeToken(xml.CharData(f.Value))
+	e.EncodeToken(xml.EndElement{Name: start.Name})
+	return nil
+}
+*/
 
 // NewCreateSubscriptionDefault can be used to create a `create-subscription` message for the NETCONF stream.
 func NewCreateSubscriptionDefault() *CreateSubscription {
@@ -107,10 +123,10 @@ func NewCreateSubscription(stopTime string, startTime string, stream string) *Cr
 }
 
 // NewCreateSubscriptionFiltered can be used to create a `create-subscription` message with a filter parameter
-func NewCreateSubscriptionFiltered(stopTime string, startTime string, stream string, filter string) *CreateSubscription {
+func NewCreateSubscriptionFiltered(stopTime string, startTime string, stream string, filter *FilterStruct) *CreateSubscription {
 	var rpc CreateSubscription
 	var sub = &CreateSubscriptionData{
-		NetconfNotificationXmlns, stream, &filterStruct{"subtree", filter}, startTime, stopTime,
+		NetconfNotificationXmlns, stream, filter, startTime, stopTime,
 	}
 	rpc.Subscription = *sub
 	rpc.MessageID = uuid()
