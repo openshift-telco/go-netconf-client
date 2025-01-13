@@ -80,26 +80,15 @@ type CreateSubscriptionData struct {
 }
 
 type FilterStruct struct {
-	Type               string       `xml:"type,attr,omitempty"`
-	Alarm_Notification *FilterParam `xml:"alarm-notification,omitempty"`
-	Interfaces_State   *FilterParam `xml:"interfaces-state,omitempty"`
+	Type       string       `xml:"type,attr,omitempty"`
+	FilterTags []*FilterTag `xml:",omitempty"`
 }
-type FilterParam struct {
-	XMLNS string `xml:"xmlns,attr"`
+type FilterTag struct {
+	XMLName     xml.Name     `xml:""`
+	Innards     string       `xml:",chardata"`
+	FilterAttrs []xml.Attr   `xml:",attr,omitempty"`
+	FilterTags  []*FilterTag `xml:",omitempty"`
 }
-
-/*
-func (f filterStruct) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	start.Name.Local = "filter"
-	start.Attr = []xml.Attr{
-		{Name: xml.Name{Local: "type"}, Value: f.Type},
-	}
-	e.EncodeToken(start)
-	e.EncodeToken(xml.CharData(f.Value))
-	e.EncodeToken(xml.EndElement{Name: start.Name})
-	return nil
-}
-*/
 
 // NewCreateSubscriptionDefault can be used to create a `create-subscription` message for the NETCONF stream.
 func NewCreateSubscriptionDefault() *CreateSubscription {
