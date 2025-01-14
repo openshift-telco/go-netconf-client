@@ -75,6 +75,7 @@ type CreateSubscription struct {
 type CreateSubscriptionData struct {
 	XMLNS     string `xml:"xmlns,attr"`
 	Stream    string `xml:"stream,omitempty"` // default is NETCONF
+	Filter    string `xml:",innerxml"`
 	StartTime string `xml:"startTime,omitempty"`
 	StopTime  string `xml:"stopTime,omitempty"`
 }
@@ -83,7 +84,7 @@ type CreateSubscriptionData struct {
 func NewCreateSubscriptionDefault() *CreateSubscription {
 	var rpc CreateSubscription
 	var sub = &CreateSubscriptionData{
-		NetconfNotificationXmlns, "", "", "",
+		NetconfNotificationXmlns, "", "", "", "",
 	}
 	rpc.Subscription = *sub
 	rpc.MessageID = uuid()
@@ -94,7 +95,18 @@ func NewCreateSubscriptionDefault() *CreateSubscription {
 func NewCreateSubscription(stopTime string, startTime string, stream string) *CreateSubscription {
 	var rpc CreateSubscription
 	var sub = &CreateSubscriptionData{
-		NetconfNotificationXmlns, stream, startTime, stopTime,
+		NetconfNotificationXmlns, stream, "", startTime, stopTime,
+	}
+	rpc.Subscription = *sub
+	rpc.MessageID = uuid()
+	return &rpc
+}
+
+// NewCreateSubscriptionFiltered can be used to create a `create-subscription` message with a filter parameter
+func NewCreateSubscriptionFiltered(stopTime string, startTime string, stream string, filter string) *CreateSubscription {
+	var rpc CreateSubscription
+	var sub = &CreateSubscriptionData{
+		NetconfNotificationXmlns, stream, filter, startTime, stopTime,
 	}
 	rpc.Subscription = *sub
 	rpc.MessageID = uuid()
