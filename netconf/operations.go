@@ -51,6 +51,29 @@ func (session *Session) CreateNotificationStream(
 	return nil
 }
 
+func (session *Session) CreateNotificationStreamFiltered(
+	timeout int32, stopTime string, startTime string, filter string, stream string, callback Callback,
+) error {
+	if session.IsNotificationStreamCreated {
+		return fmt.Errorf(
+			"there is already an active notification stream subscription. " +
+				"A session can only support one notification stream at the time",
+		)
+	}
+	session.Listener.Register(message.NetconfNotificationStreamHandler, callback)
+	sub := message.NewCreateSubscriptionFiltered(stopTime, startTime, stream, filter)
+	rpc, err := session.SyncRPC(sub, timeout)
+	if err != nil {
+		errMsg := "fail to create notification stream"
+		if rpc != nil && len(rpc.Errors) != 0 {
+			errMsg += fmt.Sprintf(" with errors: %s", rpc.Errors)
+		}
+		return fmt.Errorf("%s: %w", errMsg, err)
+	}
+	session.IsNotificationStreamCreated = true
+	return nil
+}
+
 // AsyncRPC is used to send an RPC method and receive the response asynchronously.
 func (session *Session) AsyncRPC(operation message.RPCMethod, callback Callback) error {
 
