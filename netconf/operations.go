@@ -52,7 +52,7 @@ func (session *Session) CreateNotificationStream(
 }
 
 func (session *Session) CreateNotificationStreamFiltered(
-	timeout int32, stopTime string, startTime string, filter string, stream string, callback Callback,
+	timeout int32, stopTime string, startTime string, filter string, channels []string, stream string, callback Callback,
 ) error {
 	if session.IsNotificationStreamCreated {
 		return fmt.Errorf(
@@ -61,7 +61,7 @@ func (session *Session) CreateNotificationStreamFiltered(
 		)
 	}
 	session.Listener.Register(message.NetconfNotificationStreamHandler, callback)
-	sub := message.NewCreateSubscriptionFiltered(stopTime, startTime, stream, filter)
+	sub := message.NewCreateSubscriptionFiltered(stopTime, startTime, stream, filter, channels)
 	rpc, err := session.SyncRPC(sub, timeout)
 	if err != nil {
 		errMsg := "fail to create notification stream"
