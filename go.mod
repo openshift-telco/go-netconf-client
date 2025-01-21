@@ -1,7 +1,7 @@
 module github.com/vitrifi/go-netconf-client
 
-go 1.22.2
+go 1.23.4
 
-require golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+require golang.org/x/crypto v0.32.0
 
-require golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e // indirect
+require golang.org/x/sys v0.29.0 // indirect
