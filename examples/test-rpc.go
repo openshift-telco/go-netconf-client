@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/openshift-telco/go-netconf-client/netconf"
-	"github.com/openshift-telco/go-netconf-client/netconf/message"
+	"github.com/vitrifi/go-netconf-client/netconf"
+	"github.com/vitrifi/go-netconf-client/netconf/message"
 	"golang.org/x/crypto/ssh"
 )
 
