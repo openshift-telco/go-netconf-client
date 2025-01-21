@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/openshift-telco/go-netconf-client/netconf/message"
+	"github.com/vitrifi/go-netconf-client/netconf/message"
 )
 
 func TestRPCReply(t *testing.T) {
