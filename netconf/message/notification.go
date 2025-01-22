@@ -92,18 +92,7 @@ func NewCreateSubscriptionDefault() *CreateSubscription {
 }
 
 // NewCreateSubscription can be used to create a `create-subscription` message.
-func NewCreateSubscription(stopTime string, startTime string, stream string) *CreateSubscription {
-	var rpc CreateSubscription
-	var sub = &CreateSubscriptionData{
-		NetconfNotificationXmlns, stream, "", startTime, stopTime,
-	}
-	rpc.Subscription = *sub
-	rpc.MessageID = uuid()
-	return &rpc
-}
-
-// NewCreateSubscriptionFiltered can be used to create a `create-subscription` message with a filter parameter
-func NewCreateSubscriptionFiltered(stopTime string, startTime string, stream string, filter string) *CreateSubscription {
+func NewCreateSubscription(stopTime string, startTime string, stream string, filter string) *CreateSubscription {
 	var rpc CreateSubscription
 	var sub = &CreateSubscriptionData{
 		NetconfNotificationXmlns, stream, filter, startTime, stopTime,
