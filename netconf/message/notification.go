@@ -16,7 +16,10 @@ limitations under the License.
 
 package message
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"strings"
+)
 
 const (
 	// NetconfNotificationXmlns is the XMLNS for the YANG model supporting NETCONF notification
@@ -72,28 +75,40 @@ type CreateSubscription struct {
 
 // CreateSubscriptionData is the struct to create a `create-subscription` message
 type CreateSubscriptionData struct {
-	XMLNS     string `xml:"xmlns,attr"`
-	Stream    string `xml:"stream,omitempty"` // default is NETCONF
-	StartTime string `xml:"startTime,omitempty"`
-	StopTime  string `xml:"stopTime,omitempty"`
+	XMLNS         string      `xml:"xmlns,attr"`
+	ExtraChannels *[]xml.Attr `xml:",attr,omitempty"`
+	Stream        string      `xml:"stream,omitempty"` // default is NETCONF
+	Filter        string      `xml:",innerxml"`
+	StartTime     string      `xml:"startTime,omitempty"`
+	StopTime      string      `xml:"stopTime,omitempty"`
 }
 
 // NewCreateSubscriptionDefault can be used to create a `create-subscription` message for the NETCONF stream.
 func NewCreateSubscriptionDefault() *CreateSubscription {
 	var rpc CreateSubscription
 	var sub = &CreateSubscriptionData{
-		NetconfNotificationXmlns, "", "", "",
+		NetconfNotificationXmlns, nil, "", "", "", "",
 	}
 	rpc.Subscription = *sub
 	rpc.MessageID = uuid()
 	return &rpc
 }
 
-// NewCreateSubscription can be used to create a `create-subscription` message.
-func NewCreateSubscription(stopTime string, startTime string, stream string) *CreateSubscription {
+// NewCreateSubscription can be used to create a `create-subscription` message with a filter parameter
+func NewCreateSubscription(stopTime string, startTime string, stream string, filter string, channels []string) *CreateSubscription {
 	var rpc CreateSubscription
+	var attrs []xml.Attr
+	for _, str := range channels {
+		str = strings.ReplaceAll(str, `"`, "")
+		split := strings.Split(str, "=")
+		if len(split) != 2 {
+			continue
+		}
+		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: split[0]}, Value: split[1]})
+	}
+
 	var sub = &CreateSubscriptionData{
-		NetconfNotificationXmlns, stream, startTime, stopTime,
+		NetconfNotificationXmlns, &attrs, stream, filter, startTime, stopTime,
 	}
 	rpc.Subscription = *sub
 	rpc.MessageID = uuid()
