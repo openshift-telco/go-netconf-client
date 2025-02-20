@@ -18,6 +18,7 @@ package netconf
 
 import (
 	"github.com/vitrifi/go-netconf-client/netconf/message"
+	"sync"
 	"time"
 )
 
@@ -47,20 +48,26 @@ type Callback func(Event)
 // those events occur, dispatch them its according callback functions.
 type Dispatcher struct {
 	callbacks map[string]Callback
+	mtx       sync.Mutex
 }
 
 // init a dispatcher creating the callbacks map.
 func (d *Dispatcher) init() {
 	d.callbacks = make(map[string]Callback)
+	d.mtx = sync.Mutex{}
 }
 
 // Register a callback function for the specified eventID.
 func (d *Dispatcher) Register(eventID string, callback Callback) {
+	d.mtx.Lock()
+	defer d.mtx.Unlock()
 	d.callbacks[eventID] = callback
 }
 
 // Remove a callback function for the specified eventID.
 func (d *Dispatcher) Remove(eventID string) {
+	d.mtx.Lock()
+	defer d.mtx.Unlock()
 	delete(d.callbacks, eventID)
 }
 
@@ -82,7 +89,9 @@ func (d *Dispatcher) Dispatch(eventID string, eventType EventType, value interfa
 	}
 
 	// Dispatch the event to the callback
+	d.mtx.Lock()
 	callback := d.callbacks[eventID]
+	d.mtx.Unlock()
 	if callback == nil {
 		return
 	}
