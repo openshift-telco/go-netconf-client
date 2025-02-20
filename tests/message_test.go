@@ -92,7 +92,7 @@ func TestGetWithoutFilter(t *testing.T) {
 }
 
 func TestGetWithFilter(t *testing.T) {
-	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><filter type=\"subtree\"><top xmlns=\"http://example.com/schema/1.2/config\"><users/></top></filter></rpc>"
+	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><get><filter type=\"subtree\"><top xmlns=\"http://example.com/schema/1.2/config\"><users/></top></filter></get></rpc>"
 
 	rpc := message.NewGet(message.FilterTypeSubtree, data)
 	output, err := xml.Marshal(rpc)
