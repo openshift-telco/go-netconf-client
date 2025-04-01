@@ -1,5 +1,5 @@
 /*
-Copyright 2021. Alexis de Talhouët
+Copyright 2025. Ivan Eroshkin
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,17 +16,17 @@ limitations under the License.
 
 package message
 
-// Commit represents the NETCONF `commit` message.
-// https://datatracker.ietf.org/doc/html/rfc6241#section-8.3.4.1
-type Commit struct {
+// DiscardChanges represents the NETCONF `discard-changes` message.
+// https://datatracker.ietf.org/doc/html/rfc6241#section-8.3.4.2
+type DiscardChanges struct {
 	RPC
-	Commit interface{} `xml:"commit"`
+	DiscardChanges interface{} `xml:"discard-changes"`
 }
 
-// NewCommit can be used to create a `commit` message.
-func NewCommit(msg string) *Commit {
-	var rpc Commit
-	rpc.Commit = msg
+// NewDiscardChanges can be used to create a `commit` message.
+func NewDiscardChanges(msg string) *DiscardChanges {
+	var rpc DiscardChanges
+	rpc.DiscardChanges = msg
 	rpc.MessageID = uuid()
 	return &rpc
 }
