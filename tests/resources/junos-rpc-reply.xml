@@ -1,6 +1,4 @@
-<nc:rpc-reply
-        xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"
-        xmlns:junos="http://xml.juniper.net/junos/22.2I0/junos">
+<rpc-reply message-id="">
     <interface-information
             xmlns="http://xml.juniper.net/junos/22.2I0/junos-interface" junos:style="description">
         <physical-interface>
@@ -10,4 +8,4 @@
             <description>TEST_Description</description>
         </physical-interface>
     </interface-information>
-</nc:rpc-reply>
+</rpc-reply>

@@ -284,9 +284,10 @@ func TestNewEstablishSubscription(t *testing.T) {
 }
 
 func TestNewCommit(t *testing.T) {
-	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><commit></commit></rpc>"
+	commitMsg := "some commit message"
+	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><commit>" + commitMsg + "</commit></rpc>"
 
-	rpc := message.NewCommit()
+	rpc := message.NewCommit(commitMsg)
 	output, err := xml.Marshal(rpc)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -294,6 +295,21 @@ func TestNewCommit(t *testing.T) {
 
 	if got, want := StripUUID(string(output)), StripUUID(expected); got != want {
 		t.Errorf("TestNewCommit:\nGot:%s\nWant:\n%s", got, want)
+	}
+}
+
+func TestNewDiscardChanges(t *testing.T) {
+	discardMsg := "some discard changes message"
+	expected := "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"\"><discard-changes>" + discardMsg + "</discard-changes></rpc>"
+
+	rpc := message.NewDiscardChanges(discardMsg)
+	output, err := xml.Marshal(rpc)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	if got, want := StripUUID(string(output)), StripUUID(expected); got != want {
+		t.Errorf("TestNewDiscardChanges:\nGot:%s\nWant:\n%s", got, want)
 	}
 }
 

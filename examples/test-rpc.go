@@ -93,7 +93,7 @@ func execRPC(session *netconf.Session) {
 	time.Sleep(100 * time.Millisecond)
 
 	// Commit
-	c := message.NewCommit()
+	c := message.NewCommit("")
 	session.AsyncRPC(c, defaultLogRpcReplyCallback(c.MessageID))
 	time.Sleep(100 * time.Millisecond)
 
