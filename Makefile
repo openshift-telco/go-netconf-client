@@ -30,7 +30,7 @@ go-lint-install: # @HELP installs linters (i.e., 'golint') locally
 
 go-lint: # @HELP runs linters against the Go codebase (except 'vendor' folder)
 go-lint: go-lint-install
-	golint $(find * -type d | egrep -v '^vendor/')
+	golint ./...
 
 go-test: # @HELP runs unit tests to test the Go code
 	mkdir -p $(PROJECT_DIR)/build
