@@ -20,7 +20,7 @@ COVERPROFILE_PATH=$(PROJECT_DIR)/build/coverage.txt
 all: help
 
 test-ci: # @HELP runs CI/CD pipeline locally
-test-ci: go-vet go-lint go-test
+test-ci: go-tidy go-vet go-lint go-test clean
 
 go-vet: # @HELP examines Go code and reports suspicious constructs
 	go vet ./...
@@ -28,9 +28,9 @@ go-vet: # @HELP examines Go code and reports suspicious constructs
 go-lint-install: # @HELP installs linters (i.e., 'golint') locally
 	go install golang.org/x/lint/golint@latest
 
-go-lint: # @HELP runs linters against the Go codebase
+go-lint: # @HELP runs linters against the Go codebase (except 'vendor' folder)
 go-lint: go-lint-install
-	golint ./...
+	golint $(find * -type d | egrep -v '^vendor/')
 
 go-test: # @HELP runs unit tests to test the Go code
 	mkdir -p $(PROJECT_DIR)/build
