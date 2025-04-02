@@ -25,6 +25,7 @@ var DefaultCapabilities = []string{
 	message.NetconfVersion11,
 }
 
+// Logger interface represents a wrapper for logger interface
 type Logger interface {
 	Info(string, ...any)
 	Warn(string, ...any)
@@ -142,7 +143,7 @@ func (session *Session) listen() {
 				continue
 			}
 			var rawReply = string(rawXML)
-			isRpcReply, err := regexp.MatchString(message.RpcReplyRegex, rawReply)
+			isRPCReply, err := regexp.MatchString(message.RPCReplyRegex, rawReply)
 			if err != nil {
 				session.logger.Error("failed to match RPCReply",
 					"rawReply", rawReply,
@@ -151,7 +152,7 @@ func (session *Session) listen() {
 				continue
 			}
 
-			if isRpcReply {
+			if isRPCReply {
 				rpcReply, err := message.NewRPCReply(rawXML)
 				if err != nil {
 					session.logger.Error("failed to marshall message into an RPCReply",

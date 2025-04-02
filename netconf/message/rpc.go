@@ -21,7 +21,8 @@ import (
 	"fmt"
 )
 
-const RpcReplyRegex = ".*rpc-reply"
+// RPCReplyRegex represents a regexp for RPC replies.
+const RPCReplyRegex = ".*rpc-reply"
 
 // RPCMethod defines the interface for creating an RPC method.
 // This is mostly a marker interface to abstract all RPCs
