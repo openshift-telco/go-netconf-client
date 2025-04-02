@@ -20,7 +20,7 @@ COVERPROFILE_PATH=$(PROJECT_DIR)/build/coverage.txt
 all: help
 
 test-ci: # @HELP runs CI/CD pipeline locally
-test-ci: go-tidy go-vet go-lint go-test clean
+test-ci: go-vet go-lint go-test
 
 go-vet: # @HELP examines Go code and reports suspicious constructs
 	go vet ./...
