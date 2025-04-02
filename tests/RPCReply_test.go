@@ -32,7 +32,7 @@ func TestRPCReply(t *testing.T) {
 		t.Errorf("got %q, \nwanted %q", string(input), string(output))
 	}
 
-	_, e := regexp.MatchString(message.RpcReplyRegex, string(input))
+	_, e := regexp.MatchString(message.RPCReplyRegex, string(input))
 	if e != nil {
 		t.Errorf("failed to parse rpc-reply with regex")
 	}
