@@ -14,7 +14,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"regexp"
 	"strconv"
 )
 
@@ -37,6 +36,7 @@ type transportBasicIO struct {
 	io.ReadWriteCloser
 	//new add
 	version string
+	buffer  bytes.Buffer
 }
 
 func (t *transportBasicIO) SetVersion(version string) {
@@ -212,13 +212,38 @@ func (t *transportBasicIO) Chunked(b []byte) ([]byte, error) {
 	return got, nil
 }
 
-func (t *transportBasicIO) WaitForFunc(f func([]byte) (int, error)) ([]byte, error) {
-	var out bytes.Buffer
-	buf := make([]byte, 8192)
+func (t *transportBasicIO) WaitForFunc(f func([]byte) (int, int, error)) ([]byte, error) {
+	const READ_SIZE int = 4096
+	buf := make([]byte, READ_SIZE+1)
 
-	pos := 0
+	// Step 0: Check session t.buffer. If it has data check for a separator. If there is one goto step 3a. If not continue to step 1.
+	// Step 1: Read 4096 bytes from SSH
+	// Step 2: Look for separator
+	// Step 3a: If found save message to out buffer. Trim message plus separator from buffer and store remainder in session t.buffer
+	// Step 3b: Else store what you have in session buffer and loop
+
+	if t.buffer.Len() != 0 {
+		end, separatorLength, err := f(t.buffer.Bytes())
+		if err != nil {
+			return nil, err
+		}
+		// Found a separator and have a full message
+		if end > -1 {
+			// Read the message up until the seperator
+			returnBuffer := make([]byte, end)
+			_, err = t.buffer.Read(returnBuffer)
+			if err != nil {
+				return nil, err
+			}
+			// Discard the separator now
+			separatorArray := make([]byte, separatorLength)
+			t.buffer.Read(separatorArray)
+			return returnBuffer, nil
+		}
+	}
+
 	for {
-		n, err := t.Read(buf[pos : pos+(len(buf)/2)])
+		bytesRead, err := t.Read(buf[0:READ_SIZE])
 		if err != nil {
 			if err != io.EOF {
 				return nil, err
@@ -226,24 +251,44 @@ func (t *transportBasicIO) WaitForFunc(f func([]byte) (int, error)) ([]byte, err
 			break
 		}
 
-		if n > 0 {
-			end, err := f(buf[0 : pos+n])
+		// There are bytes from the transport layer
+		if bytesRead > 0 {
+			end, separatorLength, err := f(buf[0:bytesRead])
 			if err != nil {
 				return nil, err
 			}
 
+			// Found a separator and have a full message
 			if end > -1 {
-				out.Write(buf[0:end])
-				return out.Bytes(), nil
-			}
+				// Read the message up until the seperator,
+				// accounting for what's in the shared buffer already
+				returnBuffer := make([]byte, t.buffer.Len()+end)
+				// Add everything we read from the transport(for this message) to
+				// the shared buffer
+				t.buffer.Write(buf[0:end])
+				_, err = t.buffer.Read(returnBuffer)
+				if err != nil {
+					return nil, err
+				}
+				// Discard the separator now
+				separatorArray := make([]byte, separatorLength)
+				t.buffer.Read(separatorArray)
 
-			if pos > 0 {
-				out.Write(buf[0:pos])
-				copy(buf, buf[pos:pos+n])
-			}
+				endOfMessage := end + separatorLength
+				// If there are more bytes to process
+				if endOfMessage < bytesRead {
+					// Store the rest of what we read into the session buffer
+					t.buffer.Write(buf[endOfMessage:bytesRead])
+				}
 
-			pos = n
+				return returnBuffer, nil
+			} else {
+				// Didn't find the separator and need to store the mesage in the message buffer
+				// for the next go around
+				t.buffer.Write(buf[0:bytesRead])
+			}
 		}
+
 	}
 
 	return nil, fmt.Errorf("WaitForFunc failed")
@@ -251,8 +296,8 @@ func (t *transportBasicIO) WaitForFunc(f func([]byte) (int, error)) ([]byte, err
 
 func (t *transportBasicIO) WaitForBytes(b []byte) ([]byte, error) {
 	return t.WaitForFunc(
-		func(buf []byte) (int, error) {
-			return bytes.Index(buf, b), nil
+		func(buf []byte) (int, int, error) {
+			return bytes.Index(buf, b), len(b), nil
 		},
 	)
 }
@@ -265,22 +310,22 @@ func (t *transportBasicIO) WaitForString(s string) (string, error) {
 	return "", err
 }
 
-func (t *transportBasicIO) WaitForRegexp(re *regexp.Regexp) ([]byte, [][]byte, error) {
-	var matches [][]byte
-	out, err := t.WaitForFunc(
-		func(buf []byte) (int, error) {
-			loc := re.FindSubmatchIndex(buf)
-			if loc != nil {
-				for i := 2; i < len(loc); i += 2 {
-					matches = append(matches, buf[loc[i]:loc[i+1]])
-				}
-				return loc[1], nil
-			}
-			return -1, nil
-		},
-	)
-	return out, matches, err
-}
+// func (t *transportBasicIO) WaitForRegexp(re *regexp.Regexp) ([]byte, [][]byte, error) {
+// 	var matches [][]byte
+// 	out, err := t.WaitForFunc(
+// 		func(buf []byte) (int, error) {
+// 			loc := re.FindSubmatchIndex(buf)
+// 			if loc != nil {
+// 				for i := 2; i < len(loc); i += 2 {
+// 					matches = append(matches, buf[loc[i]:loc[i+1]])
+// 				}
+// 				return loc[1], nil
+// 			}
+// 			return -1, nil
+// 		},
+// 	)
+// 	return out, matches, err
+// }
 
 // ReadWriteCloser represents a combined IO Reader and WriteCloser
 type ReadWriteCloser struct {
