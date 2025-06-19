@@ -17,8 +17,10 @@ limitations under the License.
 package netconf
 
 import (
-	"github.com/openshift-telco/go-netconf-client/netconf/message"
+	"sync"
 	"time"
+
+	"github.com/openshift-telco/go-netconf-client/netconf/message"
 )
 
 /**
@@ -46,7 +48,8 @@ type Callback func(Event)
 // Dispatcher objects can register callbacks for specific events, then when
 // those events occur, dispatch them its according callback functions.
 type Dispatcher struct {
-	callbacks map[string]Callback
+	callbacks     map[string]Callback
+	callbacksLock sync.Mutex
 }
 
 // init a dispatcher creating the callbacks map.
@@ -56,11 +59,15 @@ func (d *Dispatcher) init() {
 
 // Register a callback function for the specified eventID.
 func (d *Dispatcher) Register(eventID string, callback Callback) {
+	d.callbacksLock.Lock()
+	defer d.callbacksLock.Unlock()
 	d.callbacks[eventID] = callback
 }
 
 // Remove a callback function for the specified eventID.
 func (d *Dispatcher) Remove(eventID string) {
+	d.callbacksLock.Lock()
+	defer d.callbacksLock.Unlock()
 	delete(d.callbacks, eventID)
 }
 
