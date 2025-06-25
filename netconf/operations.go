@@ -29,7 +29,7 @@ import (
 // TODO limitation - for now, we can only register one stream per session, because when a notification is received
 // there is no way to attribute it to a specific stream
 func (session *Session) CreateNotificationStream(
-	timeout int32, stopTime string, startTime string, stream string, callback Callback,
+	timeout int32, stopTime string, startTime string, filter string, stream string, callback Callback,
 ) error {
 	if session.IsNotificationStreamCreated {
 		return fmt.Errorf(
@@ -38,7 +38,7 @@ func (session *Session) CreateNotificationStream(
 		)
 	}
 	session.Listener.Register(message.NetconfNotificationStreamHandler, callback)
-	sub := message.NewCreateSubscription(stopTime, startTime, stream)
+	sub := message.NewCreateSubscription(stopTime, startTime, stream, filter)
 	rpc, err := session.SyncRPC(sub, timeout)
 	if err != nil {
 		errMsg := "fail to create notification stream"
